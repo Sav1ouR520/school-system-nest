@@ -7,15 +7,24 @@ import {
   Param,
   Delete,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { PaginationDto } from '../common/dto/pagination.dto';
-import { ApiOperation, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiParam,
+  ApiQuery,
+  ApiTags,
+} from '@nestjs/swagger';
 import { UuidvalidatePipe } from 'src/common/pipe/UUIDvalidate.pipe';
+import { AuthGuard } from '@nestjs/passport';
 
 @ApiTags('UserService')
+@ApiBearerAuth()
 @Controller('user')
 export class UserController {
   constructor(private readonly userService: UserService) {}
@@ -28,11 +37,12 @@ export class UserController {
 
   @Post('login')
   @ApiOperation({ summary: '用户登录', description: '用户登录' })
-  login(@Body() userDto: CreateUserDto) {
+  async login(@Body() userDto: CreateUserDto) {
     return this.userService.login(userDto);
   }
 
   @Get()
+  @UseGuards(AuthGuard('jwt'))
   @ApiOperation({ summary: '查询所有用户', description: '查询所有用户' })
   @ApiQuery({ name: 'limit', description: '数量', required: false })
   @ApiQuery({ name: 'offset', description: '页数', required: false })

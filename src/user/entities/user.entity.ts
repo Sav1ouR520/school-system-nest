@@ -4,7 +4,6 @@ import {
   PrimaryGeneratedColumn,
   Column,
   BeforeInsert,
-  BeforeUpdate,
   CreateDateColumn,
 } from 'typeorm';
 
@@ -31,9 +30,11 @@ export class User {
   })
   registerTime: string;
 
+  @Column({ type: 'varchar', nullable: true, comment: 'Refresh Token' })
+  refreshToken: string;
+
   @BeforeInsert()
-  @BeforeUpdate()
   encryptPwd() {
-    this.password = hashSync(this.password);
+    this.password = hashSync(this.password, 10);
   }
 }

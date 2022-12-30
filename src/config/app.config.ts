@@ -9,6 +9,7 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 const { env } = process;
 export const SwaggerInit = (app: INestApplication) => {
   const options = new DocumentBuilder()
+    .addBearerAuth()
     .setTitle(env.SWAGGER_UI_TITLE)
     .setDescription(env.SWAGGER_UI_TITLE_DESCRIPTION)
     .setVersion(env.APP_DEFAULT_VERSION)
