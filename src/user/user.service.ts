@@ -1,21 +1,13 @@
-import {
-  BadRequestException,
-  ForbiddenException,
-  Injectable,
-} from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './entities/user.entity';
-import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
+import { CreateUserDto, UpdateUserDto } from './dto';
 import { PaginationDto } from 'src/common/dto/pagination.dto';
-import { compareSync, hashSync } from 'bcryptjs';
-import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class UserService {
   constructor(
-    private readonly jwtService: JwtService,
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
   ) {}
@@ -29,17 +21,6 @@ export class UserService {
       return 'User created successfully';
     }
     return `This ${account} has already been used`;
-  }
-
-  async login(userDto: CreateUserDto) {
-    const { account, password } = userDto;
-    const user = await this.userRepository.findOneBy({ account });
-    if (user && compareSync(password, user.password)) {
-      const token = this.getTokens(user.uuid);
-      this.updateRefreshToken(user.uuid, (await token).refresh_token);
-      return token;
-    }
-    return 'The account does not exist or the password is incorrect';
   }
 
   async findAll(paginationQuery: PaginationDto) {
@@ -77,42 +58,5 @@ export class UserService {
     }
     const result = this.userRepository.save(user);
     return result ? true : false;
-  }
-
-  async getTokens(uuid: string) {
-    const [access_token, refresh_token] = await Promise.all([
-      this.jwtService.signAsync(
-        { uuid },
-        { secret: 'at-secret', expiresIn: 60 * 60 },
-      ),
-      this.jwtService.signAsync(
-        { uuid },
-        { secret: 'rt-secret', expiresIn: 60 * 60 * 24 * 7 },
-      ),
-    ]);
-    return { access_token, refresh_token };
-  }
-
-  async updateRefreshToken(uuid: string, rt: string) {
-    const refreshToken = hashSync(rt, 10);
-    const user = await this.userRepository.preload({ uuid, refreshToken });
-    this.userRepository.save(user);
-  }
-
-  async logout(uuid: string) {
-    const refreshToken = null;
-    const user = await this.userRepository.preload({ uuid, refreshToken });
-    this.userRepository.save(user);
-  }
-
-  async refreshToken(uuid: string, rt: string) {
-    const user = await this.userRepository.findOneBy({ uuid });
-    const rtMatches = compareSync(rt, user.refreshToken);
-    if (rtMatches) {
-      const tokens = await this.getTokens(uuid);
-      await this.updateRefreshToken(uuid, rt);
-      return tokens;
-    }
-    throw new ForbiddenException('Access Denied');
   }
 }

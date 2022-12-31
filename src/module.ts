@@ -1,16 +1,7 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
-import { PostgresModule } from './common/module/postgres.module';
-import { loadConfig } from './config';
+import { AuthModule } from './auth/auth.module';
+import { PostgresModule } from './database/postgres.module';
 import { UserModule } from './user/user.module';
 
-@Module({
-  imports: [
-    ConfigModule.forRoot({
-      load: [loadConfig],
-    }),
-    UserModule,
-    PostgresModule,
-  ],
-})
+@Module({ imports: [PostgresModule, UserModule, AuthModule] })
 export class AppModule {}

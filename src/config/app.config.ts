@@ -6,16 +6,25 @@ import {
 } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
+export const getValue = (key: string) => {
+  const { env } = process;
+  const value = env[key];
+  if (!value) {
+    throw new Error(`config error - missing env.${key}`);
+  }
+  return value;
+};
+
 const { env } = process;
 export const SwaggerInit = (app: INestApplication) => {
   const options = new DocumentBuilder()
     .addBearerAuth()
-    .setTitle(env.SWAGGER_UI_TITLE)
-    .setDescription(env.SWAGGER_UI_TITLE_DESCRIPTION)
+    .setTitle('学校通')
+    .setDescription('学校通后台管理系统')
     .setVersion(env.APP_DEFAULT_VERSION)
     .build();
   const document = SwaggerModule.createDocument(app, options);
-  SwaggerModule.setup(env.SWAGGER_SETUP_URL, app, document);
+  SwaggerModule.setup('swagger', app, document);
 };
 
 export const ValidationInit = new ValidationPipe({
@@ -27,6 +36,6 @@ export const ValidationInit = new ValidationPipe({
 });
 
 export const VersioningInit: VersioningOptions = {
-  defaultVersion: '1',
+  defaultVersion: env.APP_DEFAULT_VERSION,
   type: VersioningType.URI,
 };

@@ -6,13 +6,14 @@ import { AppModule } from './module';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  const { env } = process;
   app.useGlobalPipes(ValidationInit);
-  app.setGlobalPrefix(process.env.APP_GLOBAL_PREFIX);
+  app.setGlobalPrefix(env.APP_GLOBAL_PREFIX);
   app.useGlobalFilters(new HttpExceptionFilter());
   app.useGlobalInterceptors(new WarpResponseInterceptor());
   app.enableVersioning(VersioningInit);
   SwaggerInit(app);
-  await app.listen(+process.env.APP_LISTEN_PORT);
+  await app.listen(+env.APP_LISTEN_PORT);
 }
 
 bootstrap();
