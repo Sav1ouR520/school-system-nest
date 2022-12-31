@@ -20,7 +20,6 @@ export class AtStrategy extends PassportStrategy(Strategy, 'jwt') {
   }
 
   validate(req: Request, paylod: any) {
-    const refreshToken = req.get('authorization').replace('Bearer', '').trim();
-    return { ...paylod, refreshToken };
+    return paylod;
   }
 }

@@ -5,17 +5,8 @@ import {
   VersioningType,
 } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-
-export const getValue = (key: string) => {
-  const { env } = process;
-  const value = env[key];
-  if (!value) {
-    throw new Error(`config error - missing env.${key}`);
-  }
-  return value;
-};
-
 const { env } = process;
+
 export const SwaggerInit = (app: INestApplication) => {
   const options = new DocumentBuilder()
     .addBearerAuth()

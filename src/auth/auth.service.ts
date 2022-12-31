@@ -31,14 +31,8 @@ export class AuthService {
 
   async getTokens(uuid: string) {
     const [access_token, refresh_token] = await Promise.all([
-      this.jwtService.signAsync(
-        { uuid },
-        { ...this.configService.acceptTokens },
-      ),
-      this.jwtService.signAsync(
-        { uuid },
-        { ...this.configService.refreshToken },
-      ),
+      this.jwtService.signAsync({ uuid }, this.configService.acceptTokens),
+      this.jwtService.signAsync({ uuid }, this.configService.refreshToken),
     ]);
     return { access_token, refresh_token };
   }

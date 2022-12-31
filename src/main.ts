@@ -1,8 +1,12 @@
 import { NestFactory } from '@nestjs/core';
-import { HttpExceptionFilter } from './common/exceptions/http-exception.filter';
-import { WarpResponseInterceptor } from './common/interceptors/warp-response.interceptor';
-import { ValidationInit, SwaggerInit, VersioningInit } from './config';
 import { AppModule } from './module';
+import {
+  HttpExceptionFilter,
+  SwaggerInit,
+  ValidationInit,
+  VersioningInit,
+  WarpResponseInterceptor,
+} from './common';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);

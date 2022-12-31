@@ -8,10 +8,6 @@ import {
   Delete,
   Query,
 } from '@nestjs/common';
-import { UserService } from './user.service';
-import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
-import { PaginationDto } from '../common/dto/pagination.dto';
 import {
   ApiBearerAuth,
   ApiOperation,
@@ -19,7 +15,10 @@ import {
   ApiQuery,
   ApiTags,
 } from '@nestjs/swagger';
-import { UuidvalidatePipe } from 'src/common/pipe/UUIDvalidate.pipe';
+import { UserService } from './user.service';
+import { CreateUserDto } from './dto/create-user.dto';
+import { UpdateUserDto } from './dto/update-user.dto';
+import { PaginationDto, UUIDvalidatePipe } from 'src/common';
 
 @Controller('user')
 @ApiTags('UserService')
@@ -44,7 +43,7 @@ export class UserController {
   @Get(':uuid')
   @ApiOperation({ summary: '查询指定用户', description: '用uuuid查询指定用户' })
   @ApiParam({ name: 'uuid', description: 'uuid', required: true })
-  findByUid(@Param('uuid', UuidvalidatePipe) uuid: string) {
+  findByUid(@Param('uuid', UUIDvalidatePipe) uuid: string) {
     return this.userService.findByUid(uuid);
   }
 
@@ -55,7 +54,7 @@ export class UserController {
   })
   @ApiParam({ name: 'uuid', description: 'uuid', required: true })
   update(
-    @Param('uuid', UuidvalidatePipe) uuid: string,
+    @Param('uuid', UUIDvalidatePipe) uuid: string,
     @Body() userDto: UpdateUserDto,
   ) {
     return this.userService.update(uuid, userDto);
@@ -64,7 +63,7 @@ export class UserController {
   @Delete(':uuid')
   @ApiOperation({ summary: '删除用户', description: '根据uuid删除用户' })
   @ApiParam({ name: 'uuid', description: 'uuid', required: true })
-  remove(@Param('uuid', UuidvalidatePipe) uuid: string) {
+  remove(@Param('uuid', UUIDvalidatePipe) uuid: string) {
     return this.userService.remove(uuid);
   }
 }
