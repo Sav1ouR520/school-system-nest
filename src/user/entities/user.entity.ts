@@ -33,6 +33,8 @@ export class User {
   @Column({ type: 'varchar', nullable: true, comment: 'Refresh Token' })
   refreshToken: string;
 
+  @Column({ type: 'varchar', nullable: true, comment: '用户头像' })
+  icon: string;
   @BeforeInsert()
   encryptPwd() {
     this.password = hashSync(this.password, 10);

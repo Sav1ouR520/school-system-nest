@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './entities/user.entity';
 import { CreateUserDto, UpdateUserDto } from './dto';
-import { PaginationDto } from 'src/common';
+import { PaginationDto, RemoveFile } from 'src/common';
 
 @Injectable()
 export class UserService {
@@ -35,11 +35,22 @@ export class UserService {
       : new BadRequestException(`User #${uuid} does not exist`);
   }
 
-  update(uuid: string, userDto: UpdateUserDto) {
+  updateUserInfo(uuid: string, userDto: UpdateUserDto) {
     const result = this.userModify(uuid, userDto.activeStatue, userDto);
     return result
       ? 'Successfully updated user information'
       : 'Failed to update user information';
+  }
+
+  async updateUserIcon(uuid: string, icon: string) {
+    const user = await this.userRepository.preload({ uuid, icon });
+    if (!user) {
+      throw new BadRequestException(`User #${uuid} does not exist`);
+    }
+    const oldIcon = (await this.userRepository.findOneBy({ uuid })).icon;
+    RemoveFile(oldIcon);
+    this.userRepository.save(user);
+    return '修改成功';
   }
 
   remove(uuid: string) {
@@ -56,7 +67,7 @@ export class UserService {
     if (!user) {
       throw new BadRequestException(`User #${uuid} does not exist`);
     }
-    const result = this.userRepository.save(user);
-    return result ? true : false;
+    this.userRepository.save(user);
+    return '修改成功';
   }
 }

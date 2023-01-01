@@ -1,5 +1,5 @@
 import { ApiProperty, IntersectionType } from '@nestjs/swagger';
-import { IsBoolean, Length } from 'class-validator';
+import { IsBoolean, IsString, Length } from 'class-validator';
 
 export class CreateUserDto {
   @ApiProperty({ description: '账号', example: 'helloworld' })

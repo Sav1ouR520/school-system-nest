@@ -1,4 +1,4 @@
-export const getValue = (key: string) => {
+export const fromEnvGetValue = (key: string) => {
   const { env } = process;
   const value = env[key];
   if (!value) {
