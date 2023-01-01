@@ -6,13 +6,14 @@ import {
   BeforeInsert,
   CreateDateColumn,
 } from 'typeorm';
+import { UserRole } from '../enum/userRole';
 
 @Entity()
 export class User {
   @PrimaryGeneratedColumn('uuid', { comment: '唯一标识' })
   uuid: string;
 
-  @Column({ type: 'varchar', comment: '账号名称', length: 20, nullable: true })
+  @Column({ type: 'varchar', comment: '账号名称', length: 20, default: '' })
   username: string;
 
   @Column({ type: 'varchar', comment: '登录账号', length: 20, unique: true })
@@ -35,6 +36,10 @@ export class User {
 
   @Column({ type: 'varchar', nullable: true, comment: '用户头像' })
   icon: string;
+
+  @Column({ type: 'enum', enum: UserRole, default: UserRole.USER })
+  role: UserRole;
+
   @BeforeInsert()
   encryptPwd() {
     this.password = hashSync(this.password, 10);

@@ -1,8 +1,8 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Like, Repository } from 'typeorm';
 import { User } from './entities/user.entity';
-import { CreateUserDto, UpdateUserDto } from './dto';
+import { CreateUserDto, UpdateUserDto, SelectUserDto } from './dto';
 import { PaginationDto, RemoveFile } from 'src/common';
 
 @Injectable()
@@ -12,9 +12,9 @@ export class UserService {
     private readonly userRepository: Repository<User>,
   ) {}
 
-  async register(userDto: CreateUserDto) {
+  register(userDto: CreateUserDto) {
     const { account } = userDto;
-    const result = await this.userRepository.findOneBy({ account });
+    const result = this.userRepository.findOneBy({ account });
     if (!result) {
       const user = this.userRepository.create(userDto);
       this.userRepository.save(user);
@@ -23,13 +23,36 @@ export class UserService {
     return `This ${account} has already been used`;
   }
 
-  async findAll(paginationQuery: PaginationDto) {
+  async findAll(paginationQuery: PaginationDto, userDto: SelectUserDto) {
     const { limit, offset } = paginationQuery;
-    return await this.userRepository.find({ skip: offset, take: limit });
+    const condition = {};
+    let key: keyof SelectUserDto;
+    for (key in userDto) {
+      if ((userDto[key] && key === 'account') || key === 'username') {
+        condition[key] = Like(userDto[key]);
+      } else if (userDto[key]) {
+        condition[key] = userDto[key];
+      }
+    }
+    const list = await this.userRepository.find({
+      where: condition,
+      order: { registerTime: 'DESC' },
+      skip: offset,
+      take: limit,
+    });
+    const total = await this.userRepository.count({ where: condition });
+    return { list, total };
   }
 
-  async findByUid(uuid: string) {
-    const user = await this.userRepository.findOneBy({ uuid });
+  findByAccount(account: string) {
+    const user = this.userRepository.findOneBy({ account });
+    return user
+      ? user
+      : new BadRequestException(`User #${account} does not exist`);
+  }
+
+  findByUUID(uuid: string) {
+    const user = this.userRepository.findOneBy({ uuid });
     return user
       ? user
       : new BadRequestException(`User #${uuid} does not exist`);
@@ -53,7 +76,11 @@ export class UserService {
     return '修改成功';
   }
 
-  remove(uuid: string) {
+  delete(uuid: string) {
+    this.userRepository.delete({ uuid });
+  }
+
+  disableActive(uuid: string) {
     const result = this.userModify(uuid, false);
     return result ? 'User has been deleted' : 'Failed to delete user';
   }
