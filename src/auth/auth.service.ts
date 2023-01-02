@@ -21,7 +21,7 @@ export class AuthService {
   async login(userDto: LoginUserDto) {
     const { account, password } = userDto;
     const user = await this.userRepository.findOneBy({ account });
-    if (user && compareSync(password, user.password)) {
+    if (user.activeStatue && compareSync(password, user.password)) {
       const token = this.getTokens(user.uuid);
       this.updateRefreshToken(user.uuid, (await token).refresh_token);
       return token;

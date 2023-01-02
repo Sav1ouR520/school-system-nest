@@ -44,13 +44,6 @@ export class UserService {
     return { list, total };
   }
 
-  findByAccount(account: string) {
-    const user = this.userRepository.findOneBy({ account });
-    return user
-      ? user
-      : new BadRequestException(`User #${account} does not exist`);
-  }
-
   findByUUID(uuid: string) {
     const user = this.userRepository.findOneBy({ uuid });
     return user

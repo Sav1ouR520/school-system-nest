@@ -9,21 +9,22 @@ import {
 } from './common';
 import helmet from 'helmet';
 import { join } from 'path';
-import { ConfigService } from '@nestjs/config';
+import { ConfigType } from '@nestjs/config';
+import { AppEnvConfig } from './common/config/app.env.config';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
-  const config = app.get<ConfigService>(ConfigService);
+  const config = app.get<ConfigType<typeof AppEnvConfig>>(AppEnvConfig.KEY);
   app.use(helmet());
   app.useGlobalPipes(ValidationInit);
-  app.setGlobalPrefix(config.get('APP_GLOBAL_PREFIX'));
+  app.setGlobalPrefix(config.globalPrefix);
   app.useGlobalFilters(new HttpExceptionFilter());
   app.useGlobalInterceptors(new WarpResponseInterceptor());
-  app.useStaticAssets(join(__dirname, config.get('USER_ICON_PATH')), {
-    prefix: config.get('USER_ICON_PATH'),
+  app.useStaticAssets(join(__dirname, config.userIconPath), {
+    prefix: config.userIconPath,
   });
   SwaggerInit(app);
-  await app.listen(+config.get('APP_LISTEN_PORT'));
+  await app.listen(config.appListenPort);
 }
 
 bootstrap();

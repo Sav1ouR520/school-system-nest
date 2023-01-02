@@ -4,9 +4,16 @@ import { AuthModule } from './auth/auth.module';
 import { AtGuard } from './auth/guards';
 import { PostgresModule } from './database/postgres.module';
 import { UserModule } from './user/user.module';
+import { ConfigModule } from '@nestjs/config';
+import { AppEnvConfig } from './common/config/app.env.config';
 
 @Module({
-  imports: [PostgresModule, UserModule, AuthModule],
+  imports: [
+    PostgresModule,
+    UserModule,
+    AuthModule,
+    ConfigModule.forRoot({ isGlobal: true, load: [AppEnvConfig] }),
+  ],
   providers: [{ provide: APP_GUARD, useClass: AtGuard }],
 })
 export class AppModule {}
