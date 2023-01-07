@@ -12,15 +12,31 @@ export class UserService {
     private readonly userRepository: Repository<User>,
   ) {}
 
-  register(userDto: CreateUserDto) {
-    const { account } = userDto;
-    const result = this.userRepository.findOneBy({ account });
-    if (!result) {
+  async accountAvailable(account: string) {
+    const result = await this.userRepository.findOneBy({ account });
+    return result
+      ? {
+          data: { available: false },
+          message: `This ${account} has already been used`,
+        }
+      : {
+          data: { available: true },
+          message: `This ${account} can be used`,
+        };
+  }
+
+  async register(userDto: CreateUserDto) {
+    const result = await this.accountAvailable(userDto.account);
+    if (result.data.available) {
       const user = this.userRepository.create(userDto);
       this.userRepository.save(user);
-      return 'User created successfully';
+      return {
+        message: `User${userDto.account} created successfully`,
+      };
     }
-    return `This ${account} has already been used`;
+    throw new BadRequestException(
+      `This ${userDto.account} has already been used`,
+    );
   }
 
   async findAll(paginationQuery: PaginationDto, userDto: SelectUserDto) {
@@ -41,7 +57,7 @@ export class UserService {
       take: limit,
     });
     const total = await this.userRepository.count({ where: condition });
-    return { list, total };
+    return { data: { list, total }, message: 'Request data succeeded' };
   }
 
   findByUUID(uuid: string) {
@@ -54,8 +70,8 @@ export class UserService {
   updateUserInfo(uuid: string, userDto: UpdateUserDto) {
     const result = this.userModify(uuid, userDto.activeStatue, userDto);
     return result
-      ? 'Successfully updated user information'
-      : 'Failed to update user information';
+      ? { message: 'Successfully updated user information' }
+      : { message: 'Failed to update user information' };
   }
 
   async updateUserIcon(uuid: string, icon: string) {
@@ -66,7 +82,7 @@ export class UserService {
     const oldIcon = (await this.userRepository.findOneBy({ uuid })).icon;
     RemoveFile(oldIcon);
     this.userRepository.save(user);
-    return '修改成功';
+    return { message: `Successfully modified User #${uuid} image` };
   }
 
   delete(uuid: string) {
@@ -75,7 +91,9 @@ export class UserService {
 
   disableActive(uuid: string) {
     const result = this.userModify(uuid, false);
-    return result ? 'User has been deleted' : 'Failed to delete user';
+    return result
+      ? { message: 'User has been deleted' }
+      : { message: 'Failed to delete user' };
   }
 
   async userModify(uuid: string, activeStatue = true, userDto?: UpdateUserDto) {
@@ -87,7 +105,6 @@ export class UserService {
     if (!user) {
       throw new BadRequestException(`User #${uuid} does not exist`);
     }
-    this.userRepository.save(user);
-    return '修改成功';
+    return this.userRepository.save(user);
   }
 }

@@ -7,6 +7,6 @@ export class CreateUserDto {
   readonly account: string;
 
   @ApiProperty({ description: '密码' })
-  @Length(6, 30, { message: 'the length password should be 6 to 30' })
+  @Length(8, 30, { message: 'the length password should be 6 to 30' })
   readonly password: string;
 }

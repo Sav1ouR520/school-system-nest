@@ -6,7 +6,7 @@ import { GetUser, Public } from 'src/common';
 import { RtGuard } from './guards';
 
 @Controller('auth')
-@ApiTags('AuthSerivce')
+@ApiTags('AuthController')
 @ApiBearerAuth()
 export class AuthController {
   constructor(private readonly authService: AuthService) {}

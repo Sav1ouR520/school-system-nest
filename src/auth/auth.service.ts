@@ -21,12 +21,14 @@ export class AuthService {
   async login(userDto: LoginUserDto) {
     const { account, password } = userDto;
     const user = await this.userRepository.findOneBy({ account });
-    if (user.activeStatue && compareSync(password, user.password)) {
+    if (user && user.activeStatue && compareSync(password, user.password)) {
       const token = this.getTokens(user.uuid);
-      this.updateRefreshToken(user.uuid, (await token).refresh_token);
+      this.updateRefreshToken(user.uuid, (await token).data.refresh_token);
       return token;
     }
-    return 'The account does not exist or the password is incorrect';
+    return {
+      message: 'The account does not exist or the password is incorrect',
+    };
   }
 
   async getTokens(uuid: string) {
@@ -34,7 +36,10 @@ export class AuthService {
       this.jwtService.signAsync({ uuid }, this.configService.acceptTokens),
       this.jwtService.signAsync({ uuid }, this.configService.refreshToken),
     ]);
-    return { access_token, refresh_token };
+    return {
+      data: { access_token, refresh_token },
+      message: 'Login Successful',
+    };
   }
 
   async updateRefreshToken(uuid: string, rt: string) {

@@ -15,6 +15,11 @@ import { AppEnvConfig } from './common/config/app.env.config';
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
   const config = app.get<ConfigType<typeof AppEnvConfig>>(AppEnvConfig.KEY);
+  app.enableCors({
+    origin: '*',
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    preflightContinue: false,
+  });
   app.use(helmet());
   app.useGlobalPipes(ValidationInit);
   app.setGlobalPrefix(config.globalPrefix);

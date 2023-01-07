@@ -10,10 +10,18 @@ import {
   ApiBody,
   ApiConsumes,
   ApiOperation,
+  ApiParam,
+  ApiQuery,
   ApiTags,
 } from '@nestjs/swagger';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { Inject, Patch, UploadedFile } from '@nestjs/common/decorators';
+import {
+  Get,
+  Inject,
+  Param,
+  Patch,
+  UploadedFile,
+} from '@nestjs/common/decorators';
 import { ConfigType } from '@nestjs/config';
 import { BadRequestException } from '@nestjs/common/exceptions/bad-request.exception';
 import { UserService } from './user.service';
@@ -37,6 +45,13 @@ export class UserController {
   @ApiOperation({ summary: '创建用户', description: '创建用户' })
   register(@Body() userDto: CreateUserDto) {
     return this.userService.register(userDto);
+  }
+  @Public()
+  @Get('register/:account')
+  @ApiOperation({ summary: '用户名检查', description: '检查用户名可用' })
+  @ApiParam({ name: 'account', description: '账号', required: true })
+  accountAvailable(@Param('account') account: string) {
+    return this.userService.accountAvailable(account);
   }
 
   @Post('upload/icon')

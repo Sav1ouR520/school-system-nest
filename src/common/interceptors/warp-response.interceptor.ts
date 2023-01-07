@@ -12,7 +12,7 @@ export class WarpResponseInterceptor implements NestInterceptor {
       map((data) => {
         const statusCode = context.switchToHttp().getResponse()['statusCode'];
         const timestamp = new Date().toISOString();
-        return { statusCode, data, timestamp };
+        return { statusCode, ...data, timestamp };
       }),
     );
   }

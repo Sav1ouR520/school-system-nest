@@ -56,7 +56,9 @@ services:
         ipv4_address: 172.25.0.14
 
   nestjs:
-    build: .
+    build:
+      context: ./
+      dockerfile: nestjs.dockerfile
     restart: always
     container_name: nestjs
     ports:
