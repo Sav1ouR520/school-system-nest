@@ -11,16 +11,20 @@ import helmet from 'helmet';
 import { join } from 'path';
 import { ConfigType } from '@nestjs/config';
 import { AppEnvConfig } from './common/config/app.env.config';
+import * as session from 'express-session';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
   const config = app.get<ConfigType<typeof AppEnvConfig>>(AppEnvConfig.KEY);
-  app.enableCors({
-    origin: '*',
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-    preflightContinue: false,
-  });
   app.use(helmet());
+  app.use(
+    session({
+      secret: config.sessionSecret,
+      name: 'connect.session',
+      rolling: false,
+      cookie: { path: '/', httpOnly: true, secure: false, maxAge: null },
+    }),
+  );
   app.useGlobalPipes(ValidationInit);
   app.setGlobalPrefix(config.globalPrefix);
   app.useGlobalFilters(new HttpExceptionFilter());

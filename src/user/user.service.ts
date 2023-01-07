@@ -25,13 +25,16 @@ export class UserService {
         };
   }
 
-  async register(userDto: CreateUserDto) {
+  async register(session: any, captcha: string, userDto: CreateUserDto) {
+    if (session.code.toLocaleLowerCase() !== captcha.toLocaleLowerCase()) {
+      return { message: 'Incorrect verification code' };
+    }
     const result = await this.accountAvailable(userDto.account);
     if (result.data.available) {
       const user = this.userRepository.create(userDto);
       this.userRepository.save(user);
       return {
-        message: `User${userDto.account} created successfully`,
+        message: `User #${userDto.account} created successfully`,
       };
     }
     throw new BadRequestException(
@@ -86,7 +89,10 @@ export class UserService {
   }
 
   delete(uuid: string) {
-    this.userRepository.delete({ uuid });
+    const result = this.userRepository.delete({ uuid });
+    return result
+      ? { message: 'User has been deleted' }
+      : { message: 'Failed to delete user' };
   }
 
   disableActive(uuid: string) {

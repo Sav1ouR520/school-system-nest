@@ -11,7 +11,6 @@ import {
   ApiConsumes,
   ApiOperation,
   ApiParam,
-  ApiQuery,
   ApiTags,
 } from '@nestjs/swagger';
 import { FileInterceptor } from '@nestjs/platform-express';
@@ -20,6 +19,7 @@ import {
   Inject,
   Param,
   Patch,
+  Session,
   UploadedFile,
 } from '@nestjs/common/decorators';
 import { ConfigType } from '@nestjs/config';
@@ -43,8 +43,12 @@ export class UserController {
   @Public()
   @Post('register')
   @ApiOperation({ summary: '创建用户', description: '创建用户' })
-  register(@Body() userDto: CreateUserDto) {
-    return this.userService.register(userDto);
+  register(
+    @Session() session,
+    @Body() userDto: CreateUserDto,
+    @Body('captcha') captcha: string,
+  ) {
+    return this.userService.register(session, captcha, userDto);
   }
   @Public()
   @Get('register/:account')
