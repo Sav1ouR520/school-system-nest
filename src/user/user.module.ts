@@ -21,7 +21,7 @@ import { AdminController } from './admin.controller';
           fileType == 'image' ? callback(null, true) : callback(null, false);
         },
         storage: diskStorage({
-          destination: join(__dirname, '../' + icon.userIconPath),
+          destination: join(__dirname, '../../' + icon.userIconPath),
           filename: (_, file, callback) => {
             const fileName = new Date().getTime() + extname(file.originalname);
             return callback(null, fileName);

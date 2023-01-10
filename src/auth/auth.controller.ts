@@ -1,8 +1,15 @@
-import { Body, Controller, Post, UseGuards } from '@nestjs/common';
+import {
+  BadRequestException,
+  Body,
+  Controller,
+  Post,
+  Session,
+  UseGuards,
+} from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
 import { LoginUserDto } from './dto/login-user';
-import { GetUser, Public } from 'src/common';
+import { Decrypt, GetUser, Public, captchaValidate } from 'src/common';
 import { RtGuard } from './guards';
 
 @Controller('auth')
@@ -14,8 +21,16 @@ export class AuthController {
   @Public()
   @Post('login')
   @ApiOperation({ summary: '用户登录', description: '用户登录' })
-  async login(@Body() userDto: LoginUserDto) {
-    return this.authService.login(userDto);
+  async login(@Session() session, @Body() userDto: LoginUserDto) {
+    if (session.code) {
+      const result = captchaValidate(session.code, userDto.captcha);
+      if (!result.data.validation) {
+        return result;
+      }
+      const password = Decrypt(userDto.password, session.key, session.iv);
+      return this.authService.login({ ...userDto, password });
+    }
+    throw new BadRequestException('Error Session');
   }
 
   @Post('logout')

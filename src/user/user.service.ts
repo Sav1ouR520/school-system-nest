@@ -25,15 +25,14 @@ export class UserService {
         };
   }
 
-  async register(session: any, captcha: string, userDto: CreateUserDto) {
-    if (session.code.toLocaleLowerCase() !== captcha.toLocaleLowerCase()) {
-      return { message: 'Incorrect verification code' };
-    }
+  async register(userDto: CreateUserDto) {
     const result = await this.accountAvailable(userDto.account);
     if (result.data.available) {
-      const user = this.userRepository.create(userDto);
+      const { account, password } = userDto;
+      const user = this.userRepository.create({ account, password });
       this.userRepository.save(user);
       return {
+        data: { validation: true },
         message: `User #${userDto.account} created successfully`,
       };
     }

@@ -3,8 +3,10 @@ import { AppModule } from './module';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import {
   HttpExceptionFilter,
+  SessionConfig,
   SwaggerInit,
   ValidationInit,
+  VersioningInit,
   WarpResponseInterceptor,
 } from './common';
 import helmet from 'helmet';
@@ -12,19 +14,15 @@ import { join } from 'path';
 import { ConfigType } from '@nestjs/config';
 import { AppEnvConfig } from './common/config/app.env.config';
 import * as session from 'express-session';
+import * as cookieParser from 'cookie-parser';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
   const config = app.get<ConfigType<typeof AppEnvConfig>>(AppEnvConfig.KEY);
   app.use(helmet());
-  app.use(
-    session({
-      secret: config.sessionSecret,
-      name: 'connect.session',
-      rolling: false,
-      cookie: { path: '/', httpOnly: true, secure: false, maxAge: null },
-    }),
-  );
+  app.use(cookieParser());
+  app.use(session(SessionConfig(config)));
+  app.enableVersioning(VersioningInit(config));
   app.useGlobalPipes(ValidationInit);
   app.setGlobalPrefix(config.globalPrefix);
   app.useGlobalFilters(new HttpExceptionFilter());
@@ -32,7 +30,7 @@ async function bootstrap() {
   app.useStaticAssets(join(__dirname, config.userIconPath), {
     prefix: config.userIconPath,
   });
-  SwaggerInit(app);
+  SwaggerInit(app, config);
   await app.listen(config.appListenPort);
 }
 

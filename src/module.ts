@@ -6,7 +6,7 @@ import { PostgresModule } from './database/postgres.module';
 import { UserModule } from './user/user.module';
 import { ConfigModule } from '@nestjs/config';
 import { AppEnvConfig } from './common/config/app.env.config';
-import { CaptchaController } from './common/controller/captcha.controller';
+import { CaptchaController, IndexController } from './common/controller';
 @Module({
   imports: [
     PostgresModule,
@@ -15,6 +15,6 @@ import { CaptchaController } from './common/controller/captcha.controller';
     ConfigModule.forRoot({ isGlobal: true, load: [AppEnvConfig] }),
   ],
   providers: [{ provide: APP_GUARD, useClass: AtGuard }],
-  controllers: [CaptchaController],
+  controllers: [CaptchaController, IndexController],
 })
 export class AppModule {}

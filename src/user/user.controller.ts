@@ -26,7 +26,7 @@ import { ConfigType } from '@nestjs/config';
 import { BadRequestException } from '@nestjs/common/exceptions/bad-request.exception';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
-import { GetUser, Public } from 'src/common';
+import { Decrypt, GetUser, Public, captchaValidate } from 'src/common';
 import { UpdateUserDto, UpdateUserIconDto } from './dto';
 import { UserConfig } from './config/user.config';
 
@@ -43,13 +43,18 @@ export class UserController {
   @Public()
   @Post('register')
   @ApiOperation({ summary: '创建用户', description: '创建用户' })
-  register(
-    @Session() session,
-    @Body() userDto: CreateUserDto,
-    @Body('captcha') captcha: string,
-  ) {
-    return this.userService.register(session, captcha, userDto);
+  register(@Session() session, @Body() userDto: CreateUserDto) {
+    if (session.code) {
+      const result = captchaValidate(session.code, userDto.captcha);
+      if (!result.data.validation) {
+        return result;
+      }
+      const password = Decrypt(userDto.password, session.key, session.iv);
+      return this.userService.register({ ...userDto, password });
+    }
+    throw new BadRequestException('Error Session');
   }
+
   @Public()
   @Get('register/:account')
   @ApiOperation({ summary: '用户名检查', description: '检查用户名可用' })

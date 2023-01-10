@@ -7,6 +7,7 @@ import { JWTConfig } from 'src/auth/config/jwt.config';
 import { User } from 'src/user/entities/user.entity';
 import { Repository } from 'typeorm';
 import { LoginUserDto } from './dto/login-user';
+import { Decrypt } from 'src/common/uitls/crypto.aes';
 
 @Injectable()
 export class AuthService {
@@ -22,22 +23,26 @@ export class AuthService {
     const { account, password } = userDto;
     const user = await this.userRepository.findOneBy({ account });
     if (user && user.activeStatue && compareSync(password, user.password)) {
-      const token = this.getTokens(user.uuid);
-      this.updateRefreshToken(user.uuid, (await token).data.refresh_token);
-      return token;
+      const token = await this.getTokens(user.uuid);
+      this.updateRefreshToken(user.uuid, (await token).token.refreshToken);
+      return {
+        data: { ...token, validation: true },
+        message: 'login success',
+      };
     }
     return {
+      data: { validation: false },
       message: 'The account does not exist or the password is incorrect',
     };
   }
 
   async getTokens(uuid: string) {
-    const [access_token, refresh_token] = await Promise.all([
+    const [accessToken, refreshToken] = await Promise.all([
       this.jwtService.signAsync({ uuid }, this.configService.acceptTokens),
       this.jwtService.signAsync({ uuid }, this.configService.refreshToken),
     ]);
     return {
-      data: { access_token, refresh_token },
+      token: { accessToken, refreshToken },
       message: 'Login Successful',
     };
   }
