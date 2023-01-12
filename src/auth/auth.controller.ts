@@ -38,17 +38,17 @@ export class AuthController {
     summary: '消除refreshToken',
     description: '消除refreshToken',
   })
-  logout(@GetUser('uuid') uuid: string) {
-    return this.authService.logout(uuid);
+  logout(@GetUser('id') id: string) {
+    return this.authService.logout(id);
   }
 
   @Public()
   @UseGuards(RtGuard)
   @Post('refresh')
   refreshTokens(
-    @GetUser('uuid') uuid: string,
+    @GetUser('id') id: string,
     @GetUser('refreshToken') refreshToken: string,
   ) {
-    return this.authService.refreshToken(uuid, refreshToken);
+    return this.authService.refreshToken(id, refreshToken);
   }
 }

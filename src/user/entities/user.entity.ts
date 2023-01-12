@@ -5,13 +5,14 @@ import {
   Column,
   BeforeInsert,
   CreateDateColumn,
+  Generated,
 } from 'typeorm';
 import { UserRole } from '../enum/userRole';
 
 @Entity()
 export class User {
   @PrimaryGeneratedColumn('uuid', { comment: '唯一标识' })
-  uuid: string;
+  id: string;
 
   @Column({ type: 'varchar', comment: '账号名称', length: 20, default: '' })
   username: string;
@@ -37,7 +38,12 @@ export class User {
   @Column({ type: 'varchar', nullable: true, comment: '用户头像' })
   icon: string;
 
-  @Column({ type: 'enum', enum: UserRole, default: UserRole.USER })
+  @Column({
+    type: 'enum',
+    enum: UserRole,
+    default: UserRole.USER,
+    comment: '用户权限',
+  })
   role: UserRole;
 
   @BeforeInsert()

@@ -70,11 +70,11 @@ export class UserController {
   @ApiBody({ type: UpdateUserIconDto })
   uploadUserImage(
     @UploadedFile() icon: Express.Multer.File,
-    @GetUser('uuid') uuid: string,
+    @GetUser('id') id: string,
   ) {
     if (icon) {
       const path = this.userConfig.userIconPath + icon.filename;
-      return this.userService.updateUserIcon(uuid, path);
+      return this.userService.updateUserIcon(id, path);
     }
     throw new BadRequestException(`This file type is not an image`);
   }
@@ -82,18 +82,15 @@ export class UserController {
   @Patch('upload/info')
   @ApiOperation({
     summary: '更新用户信息',
-    description: '根据uuid更新用户信息',
+    description: '根据id更新用户信息',
   })
-  updateUserInfo(
-    @GetUser('uuid') uuid: string,
-    @Body() userDto: UpdateUserDto,
-  ) {
-    return this.userService.updateUserInfo(uuid, userDto);
+  updateUserInfo(@GetUser('id') id: string, @Body() userDto: UpdateUserDto) {
+    return this.userService.updateUserInfo(id, userDto);
   }
 
   @Delete('remove/info')
   @ApiOperation({ summary: '修改用户状态', description: '修改用户状态为false' })
-  disableActive(@GetUser('uuid') uuid: string) {
-    return this.userService.disableActive(uuid);
+  disableUserActiveStatus(@GetUser('id') id: string) {
+    return this.userService.disableUserActiveStatus(id);
   }
 }

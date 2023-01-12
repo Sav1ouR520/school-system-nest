@@ -52,42 +52,42 @@ export class AdminController {
     return this.userService.findAll(paginationQuery, userDto);
   }
 
-  @Patch('upload/info/:uuid')
+  @Patch('upload/info/:id')
   @ApiOperation({
     summary: '更新用户信息',
-    description: '根据uuid更新用户信息',
+    description: '根据id更新用户信息',
   })
-  @ApiParam({ name: 'uuid', description: 'uuid', required: true })
+  @ApiParam({ name: 'id', description: 'id', required: true })
   updateUserInfo(
-    @Param('uuid', UUIDvalidatePipe) uuid: string,
+    @Param('id', UUIDvalidatePipe) id: string,
     @Body() userDto: UpdateUserDto,
   ) {
-    return this.userService.updateUserInfo(uuid, userDto);
+    return this.userService.updateUserInfo(id, userDto);
   }
 
   @Post('upload/icon')
   @UseInterceptors(FileInterceptor('icon'))
   @ApiConsumes('multipart/form-data')
   @ApiOperation({ summary: '上传用户头像', description: '上传用户头像' })
-  @ApiParam({ name: 'uuid', description: 'uuid', required: true })
+  @ApiParam({ name: 'id', description: 'id', required: true })
   @ApiBody({ type: UpdateUserIconDto })
   uploadUserImage(
     @UploadedFile() icon: Express.Multer.File,
-    @Param('uuid', UUIDvalidatePipe) uuid: string,
+    @Param('id', UUIDvalidatePipe) id: string,
   ) {
     if (icon) {
       const path = this.userConfig.userIconPath + icon.filename;
-      return this.userService.updateUserIcon(uuid, path);
+      return this.userService.updateUserIcon(id, path);
     }
     throw new BadRequestException(`This file type is not an image`);
   }
 
-  @Delete('delete/:uuid')
+  @Delete('delete/:id')
   @Roles(UserRole.ADMIN)
   @UseGuards(RoleGuard)
-  @ApiOperation({ summary: '删除用户', description: '根据uuid删除用户' })
-  @ApiParam({ name: 'uuid', description: 'uuid', required: true })
-  delete(@Param('uuid', UUIDvalidatePipe) uuid: string) {
-    return this.userService.delete(uuid);
+  @ApiOperation({ summary: '删除用户', description: '根据id删除用户' })
+  @ApiParam({ name: 'id', description: 'id', required: true })
+  delete(@Param('id', UUIDvalidatePipe) id: string) {
+    return this.userService.deleteUser(id);
   }
 }

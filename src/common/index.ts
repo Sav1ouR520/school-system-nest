@@ -5,3 +5,5 @@ export * from './interceptors/warp-response.interceptor';
 export * from './pipe/uuidValidate.pipe';
 export * from './uitls';
 export * from './decorators';
+export * from './config/app.env.config';
+export * from './guards/status.guard';

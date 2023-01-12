@@ -62,53 +62,58 @@ export class UserService {
     return { data: { list, total }, message: 'Request data succeeded' };
   }
 
-  findByUUID(uuid: string) {
-    const user = this.userRepository.findOneBy({ uuid });
-    return user
-      ? user
-      : new BadRequestException(`User #${uuid} does not exist`);
+  async findUserById(id: string) {
+    const user = await this.userRepository.findOneBy({ id });
+    return user ? user : new BadRequestException(`User #${id} does not exist`);
   }
 
-  updateUserInfo(uuid: string, userDto: UpdateUserDto) {
-    const result = this.userModify(uuid, userDto.activeStatue, userDto);
-    return result
-      ? { message: 'Successfully updated user information' }
-      : { message: 'Failed to update user information' };
-  }
-
-  async updateUserIcon(uuid: string, icon: string) {
-    const user = await this.userRepository.preload({ uuid, icon });
-    if (!user) {
-      throw new BadRequestException(`User #${uuid} does not exist`);
+  async updateUserInfo(id: string, userDto: UpdateUserDto) {
+    const user = await this.userRepository.findOneBy({ id });
+    if (user.account !== userDto.account) {
+      const result = await this.accountAvailable(userDto.account);
+      if (!result.data.available) {
+        return result;
+      }
     }
-    const oldIcon = (await this.userRepository.findOneBy({ uuid })).icon;
+    this.userInfoModify(id, userDto.activeStatue, userDto);
+    return { message: 'Successfully updated user information' };
+  }
+
+  async updateUserIcon(id: string, icon: string) {
+    const user = await this.userRepository.preload({ id, icon });
+    if (!user) {
+      throw new BadRequestException(`User #${id} does not exist`);
+    }
+    const oldIcon = (await this.userRepository.findOneBy({ id })).icon;
     RemoveFile(oldIcon);
     this.userRepository.save(user);
-    return { message: `Successfully modified User #${uuid} image` };
+    return { message: `Successfully modified User #${id} image` };
   }
 
-  delete(uuid: string) {
-    const result = this.userRepository.delete({ uuid });
+  async deleteUser(id: string) {
+    const result = await this.userRepository.delete({ id });
     return result
       ? { message: 'User has been deleted' }
       : { message: 'Failed to delete user' };
   }
 
-  disableActive(uuid: string) {
-    const result = this.userModify(uuid, false);
-    return result
-      ? { message: 'User has been deleted' }
-      : { message: 'Failed to delete user' };
+  async disableUserActiveStatus(id: string) {
+    await this.userInfoModify(id, false);
+    return { message: 'User has been deleted' };
   }
 
-  async userModify(uuid: string, activeStatue = true, userDto?: UpdateUserDto) {
+  async userInfoModify(
+    id: string,
+    activeStatue = true,
+    userDto?: UpdateUserDto,
+  ) {
     const user = await this.userRepository.preload({
-      uuid,
+      id,
       ...userDto,
       activeStatue,
     });
     if (!user) {
-      throw new BadRequestException(`User #${uuid} does not exist`);
+      throw new BadRequestException(`User #${id} does not exist`);
     }
     return this.userRepository.save(user);
   }

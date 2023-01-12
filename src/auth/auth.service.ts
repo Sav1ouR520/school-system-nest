@@ -7,7 +7,6 @@ import { JWTConfig } from 'src/auth/config/jwt.config';
 import { User } from 'src/user/entities/user.entity';
 import { Repository } from 'typeorm';
 import { LoginUserDto } from './dto/login-user';
-import { Decrypt } from 'src/common/uitls/crypto.aes';
 
 @Injectable()
 export class AuthService {
@@ -23,8 +22,8 @@ export class AuthService {
     const { account, password } = userDto;
     const user = await this.userRepository.findOneBy({ account });
     if (user && user.activeStatue && compareSync(password, user.password)) {
-      const token = await this.getTokens(user.uuid);
-      this.updateRefreshToken(user.uuid, (await token).token.refreshToken);
+      const token = await this.getTokens(user.id);
+      this.updateRefreshToken(user.id, (await token).token.refreshToken);
       return {
         data: { ...token, validation: true },
         message: 'login success',
@@ -36,10 +35,10 @@ export class AuthService {
     };
   }
 
-  async getTokens(uuid: string) {
+  async getTokens(id: string) {
     const [accessToken, refreshToken] = await Promise.all([
-      this.jwtService.signAsync({ uuid }, this.configService.acceptTokens),
-      this.jwtService.signAsync({ uuid }, this.configService.refreshToken),
+      this.jwtService.signAsync({ id }, this.configService.acceptTokens),
+      this.jwtService.signAsync({ id }, this.configService.refreshToken),
     ]);
     return {
       token: { accessToken, refreshToken },
@@ -47,24 +46,24 @@ export class AuthService {
     };
   }
 
-  async updateRefreshToken(uuid: string, rt: string) {
+  async updateRefreshToken(id: string, rt: string) {
     const refreshToken = hashSync(rt, 10);
-    const user = await this.userRepository.preload({ uuid, refreshToken });
+    const user = await this.userRepository.preload({ id, refreshToken });
     this.userRepository.save(user);
   }
 
-  async logout(uuid: string) {
+  async logout(id: string) {
     const refreshToken = null;
-    const user = await this.userRepository.preload({ uuid, refreshToken });
+    const user = await this.userRepository.preload({ id, refreshToken });
     this.userRepository.save(user);
   }
 
-  async refreshToken(uuid: string, rt: string) {
-    const user = await this.userRepository.findOneBy({ uuid });
+  async refreshToken(id: string, rt: string) {
+    const user = await this.userRepository.findOneBy({ id });
     const rtMatches = compareSync(rt, user.refreshToken);
     if (rtMatches) {
-      const tokens = await this.getTokens(uuid);
-      await this.updateRefreshToken(uuid, rt);
+      const tokens = await this.getTokens(id);
+      await this.updateRefreshToken(id, rt);
       return tokens;
     }
     throw new ForbiddenException('Access Denied');

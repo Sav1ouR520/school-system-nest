@@ -5,8 +5,9 @@ import { AtGuard } from './auth/guards';
 import { PostgresModule } from './database/postgres.module';
 import { UserModule } from './user/user.module';
 import { ConfigModule } from '@nestjs/config';
-import { AppEnvConfig } from './common/config/app.env.config';
 import { CaptchaController, IndexController } from './common/controller';
+import { AppEnvConfig } from './common';
+
 @Module({
   imports: [
     PostgresModule,
