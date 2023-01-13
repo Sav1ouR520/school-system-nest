@@ -5,9 +5,10 @@ import {
   Column,
   BeforeInsert,
   CreateDateColumn,
-  Generated,
+  OneToMany,
 } from 'typeorm';
 import { UserRole } from '../enum/userRole';
+import { Group } from 'src/document/group/entities/group.entity';
 
 @Entity()
 export class User {
@@ -45,6 +46,9 @@ export class User {
     comment: '用户权限',
   })
   role: UserRole;
+
+  @OneToMany(() => Group, (group) => group.owner)
+  group: Group[];
 
   @BeforeInsert()
   encryptPwd() {

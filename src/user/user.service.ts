@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Like, Repository } from 'typeorm';
 import { User } from './entities/user.entity';
@@ -8,7 +8,7 @@ import { PaginationDto, RemoveFile } from 'src/common';
 @Injectable()
 export class UserService {
   constructor(
-    @InjectRepository(User)
+    @Inject('UserRepository')
     private readonly userRepository: Repository<User>,
   ) {}
 
@@ -92,7 +92,7 @@ export class UserService {
 
   async deleteUser(id: string) {
     const result = await this.userRepository.delete({ id });
-    return result
+    return result.affected === 1
       ? { message: 'User has been deleted' }
       : { message: 'Failed to delete user' };
   }

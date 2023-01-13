@@ -1,8 +1,6 @@
 import { Module } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigType } from '@nestjs/config';
 import { MulterModule } from '@nestjs/platform-express';
-import { User } from './entities/user.entity';
 import { UserService } from './user.service';
 import { UserController } from './user.controller';
 import { UserConfig } from './config/user.config';
@@ -10,9 +8,9 @@ import { AdminController } from './admin.controller';
 import { fileConfig } from './config/multer.config';
 import { StatusGuard } from 'src/common';
 import { APP_GUARD } from '@nestjs/core';
+import { UserRepository } from './providers/user.repository';
 @Module({
   imports: [
-    TypeOrmModule.forFeature([User]),
     ConfigModule.forRoot({ isGlobal: true, load: [UserConfig] }),
     MulterModule.registerAsync({
       inject: [UserConfig.KEY],
@@ -20,6 +18,10 @@ import { APP_GUARD } from '@nestjs/core';
     }),
   ],
   controllers: [UserController, AdminController],
-  providers: [UserService, { provide: APP_GUARD, useClass: StatusGuard }],
+  providers: [
+    UserRepository,
+    UserService,
+    { provide: APP_GUARD, useClass: StatusGuard },
+  ],
 })
 export class UserModule {}

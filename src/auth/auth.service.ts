@@ -12,7 +12,7 @@ import { LoginUserDto } from './dto/login-user';
 export class AuthService {
   constructor(
     private readonly jwtService: JwtService,
-    @InjectRepository(User)
+    @Inject('UserRepository')
     private readonly userRepository: Repository<User>,
     @Inject(JWTConfig.KEY)
     private readonly configService: ConfigType<typeof JWTConfig>,

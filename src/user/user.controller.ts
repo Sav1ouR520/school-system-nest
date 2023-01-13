@@ -44,13 +44,15 @@ export class UserController {
   @Post('register')
   @ApiOperation({ summary: '创建用户', description: '创建用户' })
   register(@Session() session, @Body() userDto: CreateUserDto) {
+    // if (session.code && session.key && session.iv) {
     if (session.code) {
       const result = captchaValidate(session.code, userDto.captcha);
       if (!result.data.validation) {
         return result;
       }
-      const password = Decrypt(userDto.password, session.key, session.iv);
-      return this.userService.register({ ...userDto, password });
+      // const password = Decrypt(userDto.password, session.key, session.iv);
+      // return this.userService.register({ ...userDto, password });
+      return this.userService.register(userDto);
     }
     throw new BadRequestException('Error Session');
   }
