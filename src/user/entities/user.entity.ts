@@ -9,6 +9,7 @@ import {
 } from 'typeorm';
 import { UserRole } from '../enum/userRole';
 import { Group } from 'src/document/group/entities/group.entity';
+import { Member } from 'src/document/member/entities/member.entity';
 
 @Entity()
 export class User {
@@ -47,8 +48,11 @@ export class User {
   })
   role: UserRole;
 
-  @OneToMany(() => Group, (group) => group.owner)
+  @OneToMany(() => Group, (group) => group.user)
   group: Group[];
+
+  @OneToMany(() => Member, (member) => member.user)
+  member: Member[];
 
   @BeforeInsert()
   encryptPwd() {

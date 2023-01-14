@@ -43,6 +43,7 @@ export class UserController {
   @Public()
   @Post('register')
   @ApiOperation({ summary: '创建用户', description: '创建用户' })
+  @ApiBody({ type: CreateUserDto })
   register(@Session() session, @Body() userDto: CreateUserDto) {
     // if (session.code && session.key && session.iv) {
     if (session.code) {
@@ -86,6 +87,7 @@ export class UserController {
     summary: '更新用户信息',
     description: '根据id更新用户信息',
   })
+  @ApiBody({ type: UpdateUserDto })
   updateUserInfo(@GetUser('id') id: string, @Body() userDto: UpdateUserDto) {
     return this.userService.updateUserInfo(id, userDto);
   }

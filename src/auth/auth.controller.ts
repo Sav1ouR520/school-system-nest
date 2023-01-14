@@ -6,7 +6,7 @@ import {
   Session,
   UseGuards,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
 import { LoginUserDto } from './dto/login-user';
 import { Decrypt, GetUser, Public, captchaValidate } from 'src/common';
@@ -21,6 +21,7 @@ export class AuthController {
   @Public()
   @Post('login')
   @ApiOperation({ summary: '用户登录', description: '用户登录' })
+  @ApiBody({ type: LoginUserDto })
   async login(@Session() session, @Body() userDto: LoginUserDto) {
     if (session.code) {
       const result = captchaValidate(session.code, userDto.captcha);

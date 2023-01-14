@@ -20,12 +20,12 @@ export class GroupController {
   constructor(private readonly groupService: GroupService) {}
 
   @Get()
-  @ApiOperation({ summary: '查找组', description: '查找组' })
+  @ApiOperation({ summary: '查找组', description: '查找自己管理的组' })
   findGroupByOwner(@GetUser('id') owner: string) {
     return this.groupService.findGroupByOwner(owner);
   }
 
-  @Post('')
+  @Post()
   @ApiOperation({ summary: '创建组', description: '创建组' })
   @ApiBody({ type: CreateGroupDto })
   createGroup(@GetUser('id') owner: string, @Body() groupDto: CreateGroupDto) {
@@ -43,6 +43,7 @@ export class GroupController {
 
   @Patch()
   @ApiOperation({ summary: '修改组', description: '修改组' })
+  @ApiBody({ type: CreateGroupDto })
   changeGroup(@GetUser('id') owner: string, @Body() groupDto: UpdateGroupDto) {
     return this.groupService.changeGroup(groupDto, owner);
   }

@@ -3,9 +3,9 @@ import { GroupController } from './group.controller';
 import { GroupService } from './group.service';
 import { GroupRepository } from './providers/group.repository';
 import { UserRepository } from 'src/user/providers/user.repository';
-
+import { MemberRepository } from '../member/providers/member.repository';
 @Module({
   controllers: [GroupController],
-  providers: [GroupService, GroupRepository, UserRepository],
+  providers: [GroupService, GroupRepository, MemberRepository, UserRepository],
 })
 export class GroupModule {}

@@ -1,3 +1,4 @@
+import { Member } from 'src/document/member/entities/member.entity';
 import { User } from 'src/user/entities/user.entity';
 import {
   Column,
@@ -5,6 +6,7 @@ import {
   Entity,
   JoinColumn,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 
@@ -23,9 +25,15 @@ export class Group {
   @JoinColumn({ name: 'owner' })
   user: User;
 
+  @OneToMany(() => Member, (member) => member.group)
+  member: Member[];
+
   @CreateDateColumn({
     type: 'timestamp without time zone',
     comment: '创建时间',
   })
   createTime: string;
+
+  @Column({ type: 'boolean', default: true, comment: '激活状态' })
+  activeStatue: boolean;
 }

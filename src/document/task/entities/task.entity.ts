@@ -6,7 +6,7 @@ import {
 } from 'typeorm';
 
 @Entity()
-export class task {
+export class Task {
   @PrimaryGeneratedColumn('uuid', { comment: '唯一标识' })
   id: string;
 
