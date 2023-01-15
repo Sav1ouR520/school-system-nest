@@ -1,4 +1,5 @@
 import {
+  BeforeInsert,
   Column,
   CreateDateColumn,
   Entity,
@@ -18,6 +19,12 @@ export class Task {
 
   @Column({ type: 'uuid', comment: '任务创建者' })
   createUser: string;
+
+  @Column({ type: 'boolean', comment: '是否有前置材料', default: false })
+  hasData: boolean;
+
+  @Column({ type: 'varchar', comment: '前置材料存放路径', nullable: true })
+  dataPath: string;
 
   @CreateDateColumn({
     type: 'timestamp without time zone',

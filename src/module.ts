@@ -8,6 +8,7 @@ import { CaptchaController, IndexController } from './common/controller';
 import { AppEnvConfig } from './common';
 import { DocumentModule } from './document/document.module';
 import { PostgresModule } from './database/postgres.module';
+import { PathConfig } from './common/config/path.config';
 
 @Module({
   imports: [
@@ -15,7 +16,7 @@ import { PostgresModule } from './database/postgres.module';
     UserModule,
     AuthModule,
     DocumentModule,
-    ConfigModule.forRoot({ isGlobal: true, load: [AppEnvConfig] }),
+    ConfigModule.forRoot({ isGlobal: true, load: [AppEnvConfig, PathConfig] }),
   ],
   providers: [{ provide: APP_GUARD, useClass: AtGuard }],
   controllers: [CaptchaController, IndexController],
