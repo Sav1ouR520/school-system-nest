@@ -6,9 +6,8 @@ import {
   ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { MemberRole } from '../enum/memberRole';
-import { User } from 'src/user/entities/user.entity';
-import { Group } from 'src/document/group/entities/group.entity';
+import { MemberRole } from '../enum';
+import { Group, User } from 'src/common';
 
 @Entity()
 export class Member {

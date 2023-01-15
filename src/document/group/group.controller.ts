@@ -10,8 +10,7 @@ import {
 import { ApiTags, ApiBearerAuth, ApiOperation, ApiBody } from '@nestjs/swagger';
 import { GroupService } from './group.service';
 import { GetUser, UUIDvalidatePipe } from 'src/common';
-import { CreateGroupDto } from './dto/create-group.dto';
-import { UpdateGroupDto } from './dto/update-group.dto';
+import { CreateGroupDto, UpdateGroupDto } from './dto';
 
 @Controller('group')
 @ApiTags('GroupController')

@@ -1,13 +1,13 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { UserService } from './user.service';
-import { UserController } from './user.controller';
-import { UserConfig } from './config/user.config';
-import { AdminController } from './admin.controller';
-import { StatusGuard } from 'src/common';
 import { APP_GUARD } from '@nestjs/core';
-import { UserRepository } from './providers/user.repository';
-import { UserMulterModule } from './config/user.multer.module';
+import { StatusGuard } from 'src/common';
+import { AdminController } from './admin.controller';
+import { UserRepository } from './providers';
+import { UserController } from './user.controller';
+import { UserService } from './user.service';
+import { UserConfig, UserMulterModule } from './config';
+
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true, load: [UserConfig] }),

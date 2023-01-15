@@ -1,6 +1,6 @@
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { Like, Repository } from 'typeorm';
-import { User } from './entities/user.entity';
+import { User } from './entities';
 import { CreateUserDto, UpdateUserDto, SelectUserDto } from './dto';
 import { PaginationDto, RemoveFile } from 'src/common';
 

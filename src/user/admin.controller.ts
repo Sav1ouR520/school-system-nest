@@ -25,11 +25,11 @@ import { ConfigType } from '@nestjs/config';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { UserService } from './user.service';
 import { PaginationDto, UUIDvalidatePipe } from 'src/common';
+import { UserRole } from './enum';
+import { RoleGuard } from './guards';
+import { Roles } from './roles';
+import { UserConfig } from './config';
 import { SelectUserDto, UpdateUserDto, UpdateUserIconDto } from './dto';
-import { UserRole } from './enum/userRole';
-import { RoleGuard } from './guards/role.guard';
-import { Roles } from './roles/roles.decorator';
-import { UserConfig } from './config/user.config';
 
 @Controller('user')
 @Roles(UserRole.ADMIN)

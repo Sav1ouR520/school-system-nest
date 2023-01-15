@@ -1,11 +1,9 @@
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { Repository } from 'typeorm';
-import { Group } from './entities/group.entity';
-import { CreateGroupDto } from './dto/create-group.dto';
-import { UpdateGroupDto } from './dto/update-group.dto';
-import { User } from 'src/user/entities/user.entity';
-import { Member } from '../member/entities/member.entity';
-import { MemberRole } from '../member/enum/memberRole';
+import { CreateGroupDto, UpdateGroupDto } from './dto';
+import { MemberRole } from '../member/enum';
+import { Member, User } from 'src/common';
+import { Group } from './entities';
 
 @Injectable()
 export class GroupService {

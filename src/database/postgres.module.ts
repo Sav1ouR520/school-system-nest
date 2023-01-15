@@ -1,7 +1,7 @@
 import { Global, Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { dbConfig } from './config/db.config';
-import { DatabaseProvider } from './providers/database.provider';
+import { dbConfig } from './config';
+import { DatabaseProvider } from './providers';
 
 @Global()
 @Module({

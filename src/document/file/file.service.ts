@@ -2,7 +2,8 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { File } from './entities/file.entity';
-import { User } from 'src/user/entities/user.entity';
+import { User } from '../../common/entities';
+
 @Injectable()
 export class FileService {
   constructor(

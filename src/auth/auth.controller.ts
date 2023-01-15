@@ -8,7 +8,7 @@ import {
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
-import { LoginUserDto } from './dto/login-user';
+import { LoginUserDto } from './dto';
 import { Decrypt, GetUser, Public, captchaValidate } from 'src/common';
 import { RtGuard } from './guards';
 

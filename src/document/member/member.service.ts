@@ -1,9 +1,8 @@
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { Repository } from 'typeorm';
-import { Member } from './entities/member.entity';
-import { Group } from '../group/entities/group.entity';
+import { Group, User } from 'src/common';
 import { CreateMemberDto, UploadMemberDto, deleteMemberDto } from './dto';
-import { User } from 'src/user/entities/user.entity';
+import { Member } from './entities';
 
 @Injectable()
 export class MemberService {

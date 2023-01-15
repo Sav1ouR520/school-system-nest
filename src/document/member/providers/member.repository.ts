@@ -1,6 +1,6 @@
 import { Provider } from '@nestjs/common';
 import { DataSource } from 'typeorm';
-import { Member } from '../entities/member.entity';
+import { Member } from '../entities';
 
 export const MemberRepository: Provider = {
   inject: ['DATA_SOURCE'],

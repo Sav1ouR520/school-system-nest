@@ -1,12 +1,11 @@
 import { ForbiddenException, Inject, Injectable } from '@nestjs/common';
 import { ConfigType } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
-import { InjectRepository } from '@nestjs/typeorm';
 import { compareSync, hashSync } from 'bcryptjs';
-import { JWTConfig } from 'src/auth/config/jwt.config';
-import { User } from 'src/user/entities/user.entity';
 import { Repository } from 'typeorm';
-import { LoginUserDto } from './dto/login-user';
+import { LoginUserDto } from './dto';
+import { User } from 'src/common';
+import { JWTConfig } from './config';
 
 @Injectable()
 export class AuthService {

@@ -7,9 +7,8 @@ import {
   CreateDateColumn,
   OneToMany,
 } from 'typeorm';
-import { UserRole } from '../enum/userRole';
-import { Group } from 'src/document/group/entities/group.entity';
-import { Member } from 'src/document/member/entities/member.entity';
+import { UserRole } from '../enum';
+import { Group, Member } from 'src/common';
 
 @Entity()
 export class User {

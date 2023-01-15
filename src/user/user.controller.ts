@@ -25,10 +25,15 @@ import {
 import { ConfigType } from '@nestjs/config';
 import { BadRequestException } from '@nestjs/common/exceptions/bad-request.exception';
 import { UserService } from './user.service';
-import { CreateUserDto } from './dto/create-user.dto';
-import { Decrypt, GetUser, Public, captchaValidate } from 'src/common';
-import { UpdateUserDto, UpdateUserIconDto } from './dto';
-import { UserConfig } from './config/user.config';
+import {
+  Decrypt,
+  GetUser,
+  PathConfig,
+  Public,
+  captchaValidate,
+} from 'src/common';
+import { CreateUserDto, UpdateUserDto, UpdateUserIconDto } from './dto';
+import { UserConfig } from './config';
 
 @Controller('user')
 @ApiTags('UserController')
@@ -38,6 +43,8 @@ export class UserController {
     private readonly userService: UserService,
     @Inject(UserConfig.KEY)
     private readonly userConfig: ConfigType<typeof UserConfig>,
+    @Inject(PathConfig.KEY)
+    private readonly pathConfig: ConfigType<typeof PathConfig>,
   ) {}
 
   @Public()
@@ -76,7 +83,8 @@ export class UserController {
     @GetUser('id') id: string,
   ) {
     if (icon) {
-      const path = this.userConfig.userIconPath + icon.filename;
+      const path =
+        this.pathConfig.rootPath + this.userConfig.userIconPath + icon.filename;
       return this.userService.updateUserIcon(id, path);
     }
     throw new BadRequestException(`This file type is not an image`);

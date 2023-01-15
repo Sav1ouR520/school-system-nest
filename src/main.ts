@@ -2,6 +2,7 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './module';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import {
+  AppEnvConfig,
   HttpExceptionFilter,
   SessionConfig,
   SwaggerInit,
@@ -12,7 +13,6 @@ import {
 import helmet from 'helmet';
 import { join } from 'path';
 import { ConfigType } from '@nestjs/config';
-import { AppEnvConfig } from './common/config/app.env.config';
 import * as session from 'express-session';
 import * as cookieParser from 'cookie-parser';
 

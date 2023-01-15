@@ -4,7 +4,7 @@ import { extname } from 'path';
 import { UserConfig } from './user.config';
 import { MulterModule } from '@nestjs/platform-express';
 import { Module } from '@nestjs/common';
-import { PathConfig } from 'src/common/config/path.config';
+import { PathConfig } from 'src/common';
 
 @Module({
   imports: [

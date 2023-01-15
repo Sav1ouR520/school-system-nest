@@ -1,8 +1,10 @@
+import { Group } from 'src/common';
 import {
-  BeforeInsert,
   Column,
   CreateDateColumn,
   Entity,
+  JoinColumn,
+  ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 
@@ -20,6 +22,9 @@ export class Task {
   @Column({ type: 'uuid', comment: '任务创建者' })
   createUser: string;
 
+  @Column({ type: 'uuid', comment: '组id' })
+  groudId: string;
+
   @Column({ type: 'boolean', comment: '是否有前置材料', default: false })
   hasData: boolean;
 
@@ -31,4 +36,8 @@ export class Task {
     comment: '创建时间',
   })
   createTime: string;
+
+  @ManyToOne(() => Group, (group) => group.task)
+  @JoinColumn({ name: 'groupId' })
+  group: Group;
 }

@@ -1,10 +1,10 @@
 import { ConfigType } from '@nestjs/config';
-import { diskStorage } from 'multer';
-import { extname } from 'path';
 import { MulterModule } from '@nestjs/platform-express';
 import { Module } from '@nestjs/common';
+import { diskStorage } from 'multer';
+import { extname } from 'path';
+import { PathConfig } from 'src/common';
 import { TaskConfig } from './task.config';
-import { PathConfig } from 'src/common/config/path.config';
 
 @Module({
   imports: [
