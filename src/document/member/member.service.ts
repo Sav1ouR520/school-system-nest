@@ -15,14 +15,6 @@ export class MemberService {
     private readonly userRepository: Repository<User>,
   ) {}
 
-  async findGroupByUserId(userId: string) {
-    const data = await this.memberRepository.find({
-      where: { userId },
-      relations: ['group'],
-    });
-    return { data, message: 'Request data succeeded' };
-  }
-
   async addMember(memberDto: CreateMemberDto) {
     const { groupId } = memberDto;
     const members: Member[] = [];

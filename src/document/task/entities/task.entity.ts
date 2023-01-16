@@ -23,7 +23,10 @@ export class Task {
   createUser: string;
 
   @Column({ type: 'uuid', comment: '组id' })
-  groudId: string;
+  groupId: string;
+
+  @Column({ type: 'boolean', default: true, comment: '激活状态' })
+  activeStatue: boolean;
 
   @Column({ type: 'boolean', comment: '是否有前置材料', default: false })
   hasData: boolean;

@@ -25,6 +25,14 @@ export class GroupService {
     return { data, message: 'Request data succeeded' };
   }
 
+  async findGroupByUserId(userId: string) {
+    const data = await this.memberRepository.find({
+      where: { userId },
+      relations: ['group'],
+    });
+    return { data, message: 'Request data succeeded' };
+  }
+
   async createGroup(owner: string, groupDto: CreateGroupDto) {
     const user = await this.userRepository.findOneBy({ id: owner });
     const name = user.username;
@@ -56,8 +64,8 @@ export class GroupService {
       id,
       activeStatue: false,
     });
-    this.groupRepository.save(result);
-    return { message: 'Group has been deleted' };
+    const { name } = await this.groupRepository.save(result);
+    return { message: `Group #${name} has been deleted` };
   }
 
   async changeGroup(

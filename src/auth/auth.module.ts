@@ -7,7 +7,6 @@ import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { AtStrategy, RtStrategy } from './strategies';
 import { JWTConfig } from './config';
-import { AtGuard } from './guards';
 
 @Module({
   imports: [
@@ -15,12 +14,6 @@ import { AtGuard } from './guards';
     JwtModule.register({}),
   ],
   controllers: [AuthController],
-  providers: [
-    { provide: APP_GUARD, useClass: AtGuard },
-    RtStrategy,
-    AtStrategy,
-    AuthService,
-    UserRepository,
-  ],
+  providers: [RtStrategy, AtStrategy, AuthService, UserRepository],
 })
 export class AuthModule {}

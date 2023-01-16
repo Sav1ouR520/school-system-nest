@@ -37,11 +37,11 @@ export class Member {
   })
   joinTime: string;
 
-  @ManyToOne(() => User, (user) => user.member)
+  @ManyToOne(() => User, (user) => user.member, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'userId' })
   user: User;
 
-  @ManyToOne(() => Group, (group) => group.member)
+  @ManyToOne(() => Group, (group) => group.member, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'groupId' })
   group: Group;
 }

@@ -29,7 +29,7 @@ export class Group {
   @Column({ type: 'boolean', default: true, comment: '激活状态' })
   activeStatue: boolean;
 
-  @ManyToOne(() => User, (user) => user.group)
+  @ManyToOne(() => User, (user) => user.group, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'owner' })
   user: User;
 

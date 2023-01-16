@@ -1,7 +1,5 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { APP_GUARD } from '@nestjs/core';
-import { StatusGuard } from 'src/common';
 import { AdminController } from './admin.controller';
 import { UserRepository } from './providers';
 import { UserController } from './user.controller';
@@ -14,10 +12,7 @@ import { UserConfig, UserMulterModule } from './config';
     UserMulterModule,
   ],
   controllers: [UserController, AdminController],
-  providers: [
-    UserRepository,
-    UserService,
-    { provide: APP_GUARD, useClass: StatusGuard },
-  ],
+  providers: [UserRepository, UserService],
+  exports: [UserService],
 })
 export class UserModule {}

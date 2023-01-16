@@ -1,8 +1,9 @@
 import { ApiProperty, PartialType } from '@nestjs/swagger';
-import { IsNotEmpty, IsUUID } from 'class-validator';
+import { IsNotEmpty, IsString, IsUUID } from 'class-validator';
 
 class UpdateGroupInfo {
   @ApiProperty({ description: '组名' })
+  @IsString()
   readonly name: string;
 
   @ApiProperty({ description: '更换者的UUID' })

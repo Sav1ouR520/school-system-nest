@@ -18,10 +18,16 @@ import { CreateGroupDto, UpdateGroupDto } from './dto';
 export class GroupController {
   constructor(private readonly groupService: GroupService) {}
 
-  @Get()
+  @Get('owner')
   @ApiOperation({ summary: '查找组', description: '查找自己管理的组' })
   findGroupByOwner(@GetUser('id') owner: string) {
     return this.groupService.findGroupByOwner(owner);
+  }
+
+  @Get('user')
+  @ApiOperation({ summary: '查找组', description: '查找组' })
+  findGroupByUserId(@GetUser('id') id: string) {
+    return this.groupService.findGroupByUserId(id);
   }
 
   @Post()

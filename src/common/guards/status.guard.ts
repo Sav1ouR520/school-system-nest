@@ -15,8 +15,11 @@ export class StatusGuard implements CanActivate {
       context.getClass(),
     ]);
     if (isPulic) return true;
-    const id = context.switchToHttp().getRequest()['user']['id'];
-    const user = this.userService.findUserById(id) as Promise<User>;
-    return (await user).activeStatue;
+    const user = context.switchToHttp().getRequest()['user'];
+    if (user) {
+      const result = this.userService.findUserById(user.id) as Promise<User>;
+      return (await result).activeStatue;
+    }
+    return false;
   }
 }

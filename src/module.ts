@@ -1,11 +1,13 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { AppEnvConfig, PathConfig } from './common';
+import { AppEnvConfig, PathConfig, StatusGuard } from './common';
 import { UserModule } from './user/user.module';
 import { CaptchaController, IndexController } from './common/controller';
 import { AuthModule } from './auth/auth.module';
 import { DocumentModule } from './document/document.module';
 import { PostgresModule } from './database/postgres.module';
+import { APP_GUARD } from '@nestjs/core';
+import { AtGuard } from './auth/guards';
 
 @Module({
   imports: [
@@ -15,7 +17,10 @@ import { PostgresModule } from './database/postgres.module';
     DocumentModule,
     ConfigModule.forRoot({ isGlobal: true, load: [AppEnvConfig, PathConfig] }),
   ],
-  providers: [],
+  providers: [
+    { provide: APP_GUARD, useClass: AtGuard },
+    { provide: APP_GUARD, useClass: StatusGuard },
+  ],
   controllers: [CaptchaController, IndexController],
 })
 export class AppModule {}
