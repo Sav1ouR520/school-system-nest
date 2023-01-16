@@ -1,9 +1,9 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Length, IsNotEmpty } from 'class-validator';
+import { IsNotEmpty, IsEmail } from 'class-validator';
 
 export class CreateUserDto {
   @ApiProperty({ description: '账号' })
-  @Length(6, 20, { message: 'the length account should be 6 to 20' })
+  @IsEmail()
   readonly account: string;
 
   @ApiProperty({ description: '密码' })

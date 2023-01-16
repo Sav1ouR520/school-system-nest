@@ -10,15 +10,19 @@ export class TaskService {
     private readonly TaskRepository: Repository<Task>,
   ) {}
 
-  findtaskByGroupId(groupId: string, createUser: string, activeStatue = true) {
-    const data = this.TaskRepository.find({
+  async findtaskByGroupId(
+    groupId: string,
+    createUser: string,
+    activeStatue = true,
+  ) {
+    const data = await this.TaskRepository.find({
       where: { groupId, createUser, activeStatue },
       relations: ['group'],
     });
     return { data, message: 'Request data succeeded' };
   }
 
-  addTask(createUser: string, taskDto: CreateTaskDto, dataPath?: string) {
+  async addTask(createUser: string, taskDto: CreateTaskDto, dataPath?: string) {
     const hasData = dataPath ? true : false;
     const task = this.TaskRepository.create({
       createUser,
@@ -26,7 +30,8 @@ export class TaskService {
       hasData,
       dataPath,
     });
-    return this.TaskRepository.save(task);
+    await this.TaskRepository.save(task);
+    return { message: 'Task created successfully' };
   }
 
   async deleteTask(id: string, createUser: string, activeStatue = true) {

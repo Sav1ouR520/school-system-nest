@@ -22,7 +22,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { GetUser, PathConfig, UUIDvalidatePipe } from 'src/common';
 import { ConfigType } from '@nestjs/config';
 import { TaskConfig } from './config';
-import { CreateTaskDto, TaskFileDto, UploadTaskDto } from './dto';
+import { CreateTaskDto, UploadTaskDto } from './dto';
 
 @Controller('task')
 @ApiTags('TaskController')
@@ -44,10 +44,11 @@ export class TaskController {
   ) {
     return this.taskService.findtaskByGroupId(groupId, userId);
   }
+
   @Post()
   @UseInterceptors(FileInterceptor('file'))
   @ApiConsumes('multipart/form-data')
-  @ApiBody({ type: CreateTaskDto && TaskFileDto })
+  @ApiBody({ type: CreateTaskDto })
   @ApiOperation({ summary: '创建任务', description: '创建任务' })
   addTask(
     @Body() taskDto: CreateTaskDto,
@@ -76,7 +77,7 @@ export class TaskController {
   @Patch()
   @UseInterceptors(FileInterceptor('file'))
   @ApiConsumes('multipart/form-data')
-  @ApiBody({ type: UploadTaskDto && TaskFileDto })
+  @ApiBody({ type: UploadTaskDto })
   @ApiOperation({ summary: '修改任务', description: '修改任务' })
   modifyTask(
     @UploadedFile() file: Express.Multer.File,

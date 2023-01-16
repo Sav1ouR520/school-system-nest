@@ -18,7 +18,7 @@ export class User {
   @Column({ type: 'varchar', comment: '账号名称', length: 20, default: '' })
   username: string;
 
-  @Column({ type: 'varchar', comment: '登录账号', length: 20, unique: true })
+  @Column({ type: 'varchar', comment: '登录账号', unique: true })
   account: string;
 
   @Column({ type: 'varchar', comment: '登录密码' })

@@ -1,6 +1,6 @@
 import { ConfigType } from '@nestjs/config';
 import { diskStorage } from 'multer';
-import { extname } from 'path';
+import { extname, join } from 'path';
 import { UserConfig } from './user.config';
 import { MulterModule } from '@nestjs/platform-express';
 import { Module } from '@nestjs/common';
@@ -19,7 +19,7 @@ import { PathConfig } from 'src/common';
           fileType == 'image' ? callback(null, true) : callback(null, false);
         },
         storage: diskStorage({
-          destination: path.rootPath + config.userIconPath,
+          destination: join(path.rootPath, config.userIconPath),
           filename: (_, file, callback) => {
             const fileName = new Date().getTime() + extname(file.originalname);
             return callback(null, fileName);

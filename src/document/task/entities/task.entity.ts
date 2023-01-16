@@ -1,10 +1,11 @@
-import { Group } from 'src/common';
+import { Group, File } from 'src/common';
 import {
   Column,
   CreateDateColumn,
   Entity,
   JoinColumn,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 
@@ -43,4 +44,7 @@ export class Task {
   @ManyToOne(() => Group, (group) => group.task)
   @JoinColumn({ name: 'groupId' })
   group: Group;
+
+  @OneToMany(() => File, (file) => file.task)
+  file: File[];
 }

@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import {
+  FileRepository,
   GroupRepository,
   MemberRepository,
   TaskRepository,
@@ -12,7 +13,14 @@ import {
     MemberRepository,
     TaskRepository,
     UserRepository,
+    FileRepository,
   ],
-  exports: [GroupRepository, MemberRepository, TaskRepository, UserRepository],
+  exports: [
+    GroupRepository,
+    MemberRepository,
+    TaskRepository,
+    UserRepository,
+    FileRepository,
+  ],
 })
 export class RepositoryModule {}

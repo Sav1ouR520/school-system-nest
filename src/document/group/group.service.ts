@@ -44,22 +44,13 @@ export class GroupService {
         const member = { group, user, role, name };
         const entity = this.memberRepository.create(member);
         await transactionalEntityManager.save(entity);
-        return { message: `Group #${group.name} created successfully` };
+        return { message: `Group #${group.id} created successfully` };
       },
     );
   }
 
-  async deleteGroup(id: string, owner: string, activeStatue = true) {
-    const group = await this.groupRepository.findOneBy({
-      id,
-      owner,
-      activeStatue,
-    });
-    if (!group) {
-      throw new BadRequestException(
-        `The group #${id} does not belong to this user #${owner}`,
-      );
-    }
+  async deleteGroup(id: string, owner: string) {
+    await this.beforeAction(id, owner);
     const result = await this.groupRepository.preload({
       id,
       activeStatue: false,
@@ -68,28 +59,23 @@ export class GroupService {
     return { message: `Group #${name} has been deleted` };
   }
 
-  async changeGroup(
-    groupDto: UpdateGroupDto,
-    owner: string,
-    activeStatue = true,
-  ) {
-    const { id } = groupDto;
-    const group = await this.groupRepository.findOneBy({
-      id,
-      owner,
-      activeStatue,
-    });
+  async changeGroup(groupDto: UpdateGroupDto, owner: string) {
+    await this.beforeAction(groupDto.id, owner);
+    const user = await this.userRepository.findOneBy({ id: groupDto.owner });
+    if (!user) {
+      throw new BadRequestException(`User #${groupDto.owner} does not exist`);
+    }
+    const result = await this.groupRepository.preload(groupDto);
+    this.groupRepository.save(result);
+    return { message: 'Successfully updated group information' };
+  }
+
+  async beforeAction(id: string, owner: string) {
+    const group = await this.groupRepository.findOneBy({ id, owner });
     if (!group) {
       throw new BadRequestException(
         `The group #${id} does not belong to this user #${owner}`,
       );
     }
-    const user = await this.userRepository.findOneBy({ id: groupDto.owner });
-    if (!user) {
-      throw new BadRequestException(`User #${id} does not exist`);
-    }
-    const result = await this.groupRepository.preload(groupDto);
-    this.groupRepository.save(result);
-    return { message: 'Successfully updated group information' };
   }
 }

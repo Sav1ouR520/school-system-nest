@@ -8,6 +8,7 @@ import { DocumentModule } from './document/document.module';
 import { PostgresModule } from './database/postgres.module';
 import { APP_GUARD } from '@nestjs/core';
 import { AtGuard } from './auth/guards';
+import { EmailModule } from './email/email.module';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { AtGuard } from './auth/guards';
     UserModule,
     AuthModule,
     DocumentModule,
+    EmailModule,
     ConfigModule.forRoot({ isGlobal: true, load: [AppEnvConfig, PathConfig] }),
   ],
   providers: [

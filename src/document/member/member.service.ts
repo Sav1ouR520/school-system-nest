@@ -15,14 +15,27 @@ export class MemberService {
     private readonly userRepository: Repository<User>,
   ) {}
 
-  async addMember(memberDto: CreateMemberDto) {
+  async beforeAction(id: string, owner: string, activeStatue = true) {
+    const group = await this.groupRepository.findOneBy({
+      id,
+      owner,
+      activeStatue,
+    });
+    if (!group) {
+      throw new BadRequestException(
+        `The group #${id} does not belong to this user #${owner}`,
+      );
+    }
+  }
+
+  async addMember(memberDto: CreateMemberDto, onwer: string) {
     const { groupId } = memberDto;
     const members: Member[] = [];
-    const group = await this.groupRepository.findOneBy({ id: groupId });
+    await this.beforeAction(groupId, onwer);
     for (const member of memberDto.members) {
       const user = await this.userRepository.findOneBy({ id: member.userId });
       const entity = this.memberRepository.create({
-        group,
+        groupId,
         ...member,
         name: user.username,
       });
@@ -36,9 +49,10 @@ export class MemberService {
     return { message: 'Member added successfully' };
   }
 
-  async deleteMember(memberDto: deleteMemberDto) {
+  async deleteMember(memberDto: deleteMemberDto, onwer: string) {
     const { groupId } = memberDto;
     const members: Member[] = [];
+    await this.beforeAction(groupId, onwer);
     for (const member of memberDto.members) {
       const { id, userId } = member;
       const entity = await this.memberRepository.findOneBy({
@@ -46,6 +60,9 @@ export class MemberService {
         groupId,
         userId,
       });
+      if (userId === onwer) {
+        throw new BadRequestException(`You can't modify your own permissions`);
+      }
       if (!entity) {
         throw new BadRequestException('Entity does not exist');
       }
@@ -59,9 +76,10 @@ export class MemberService {
     return { message: 'Member deleted successfully' };
   }
 
-  async modifyMember(memberDto: UploadMemberDto) {
+  async modifyMember(memberDto: UploadMemberDto, onwer: string) {
     const { groupId } = memberDto;
     const members: Member[] = [];
+    await this.beforeAction(groupId, onwer);
     for (const member of memberDto.members) {
       const { id, userId, role, name } = member;
       const entity = await this.memberRepository.findOneBy({
@@ -69,11 +87,14 @@ export class MemberService {
         groupId,
         userId,
       });
+      if (userId === onwer) {
+        throw new BadRequestException(`You can't modify your own permissions`);
+      }
       if (!entity) {
         throw new BadRequestException('Entity does not exist');
       }
-      role ? (entity.role = role) : '';
-      name ? (entity.name = name) : '';
+      role ? (entity.role = role) : undefined;
+      name ? (entity.name = name) : undefined;
       members.push(entity);
     }
     await this.memberRepository.manager.transaction(

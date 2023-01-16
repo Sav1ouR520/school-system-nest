@@ -1,6 +1,6 @@
 import { ConfigType } from '@nestjs/config';
 import { diskStorage } from 'multer';
-import { extname } from 'path';
+import { extname, join } from 'path';
 import { MulterModule } from '@nestjs/platform-express';
 import { Module } from '@nestjs/common';
 import { PathConfig } from 'src/common/config/path.config';
@@ -18,7 +18,7 @@ import { FileConfig } from './file.config';
           callback(null, true);
         },
         storage: diskStorage({
-          destination: path.rootPath + config.fileUploadPath,
+          destination: join(path.rootPath, config.fileUploadPath),
           filename: (_, file, callback) => {
             const fileName = new Date().getTime() + extname(file.originalname);
             return callback(null, fileName);

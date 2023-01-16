@@ -13,4 +13,7 @@ export class CreateTaskDto {
   @ApiProperty({ description: '任务简介' })
   @IsString()
   readonly introduce?: string;
+
+  @ApiProperty({ description: '前置文件', format: 'binary' })
+  readonly file?: any;
 }

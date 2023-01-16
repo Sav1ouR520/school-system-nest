@@ -1,7 +1,10 @@
+import { Task } from 'src/common';
 import {
   Column,
   CreateDateColumn,
   Entity,
+  JoinColumn,
+  ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 
@@ -27,4 +30,8 @@ export class File {
 
   @Column({ type: 'varchar', comment: '文件存放路径' })
   filePath: string;
+
+  @ManyToOne(() => Task, (task) => task.file)
+  @JoinColumn({ name: 'taskId' })
+  task: Task;
 }
