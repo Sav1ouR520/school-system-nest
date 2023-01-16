@@ -43,8 +43,8 @@ export const SessionConfig = (
 ): session.SessionOptions => ({
   secret: config.sessionSecret,
   resave: false,
-  saveUninitialized: false,
+  saveUninitialized: true,
   name: 'connect.session',
   rolling: false,
-  cookie: { path: '/', httpOnly: true, secure: false, maxAge: null },
+  cookie: { path: '/', httpOnly: true, secure: false, maxAge: 10 * 60 },
 });

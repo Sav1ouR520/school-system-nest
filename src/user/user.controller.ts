@@ -52,15 +52,15 @@ export class UserController {
   @ApiOperation({ summary: '创建用户', description: '创建用户' })
   @ApiBody({ type: CreateUserDto })
   register(@Session() session, @Body() userDto: CreateUserDto) {
-    // if (session.code && session.key && session.iv) {
-    if (session.code) {
-      const result = captchaValidate(session.code, userDto.captcha);
+    if (session.emailcode && session.key && session.iv) {
+      // if (session.code) {
+      const result = captchaValidate(session.emailcode, userDto.emailcode);
       if (!result.data.validation) {
         return result;
       }
-      // const password = Decrypt(userDto.password, session.key, session.iv);
-      // return this.userService.register({ ...userDto, password });
-      return this.userService.register(userDto);
+      const password = Decrypt(userDto.password, session.key, session.iv);
+      return this.userService.register({ ...userDto, password });
+      // return this.userService.register(userDto);
     }
     throw new BadRequestException('Error Session');
   }
