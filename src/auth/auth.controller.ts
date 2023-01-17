@@ -28,8 +28,8 @@ export class AuthController {
       if (!result.data.validation) {
         return result;
       }
-      // const password = Decrypt(userDto.password, session.key, session.iv);
-      // return this.authService.login({ ...userDto, password });
+      const password = Decrypt(userDto.password, session.key, session.iv);
+      return this.authService.login({ ...userDto, password });
       return this.authService.login(userDto);
     }
     throw new BadRequestException('Error Session');

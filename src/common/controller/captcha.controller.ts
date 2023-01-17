@@ -19,6 +19,7 @@ export class CaptchaController {
       background: '#9CA3AF',
     });
     session.code = captcha.text;
+    console.log(session);
     res.type('image/svg+xml');
     res.send(captcha.data);
   }

@@ -46,5 +46,5 @@ export const SessionConfig = (
   saveUninitialized: true,
   name: 'connect.session',
   rolling: false,
-  cookie: { path: '/', httpOnly: true, secure: false, maxAge: 10 * 60 },
+  cookie: { path: '/', httpOnly: true, secure: false, maxAge: null },
 });

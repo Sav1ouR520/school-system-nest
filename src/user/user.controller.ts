@@ -54,21 +54,22 @@ export class UserController {
   register(@Session() session, @Body() userDto: CreateUserDto) {
     if (session.emailcode && session.key && session.iv) {
       // if (session.code) {
-      const result = captchaValidate(session.emailcode, userDto.emailcode);
-      if (!result.data.validation) {
+      const result = captchaValidate(session.emailcode, userDto.captcha);
+      if (!result.data.validation || session.email !== userDto.account) {
+        result.data.validation = false;
         return result;
       }
       const password = Decrypt(userDto.password, session.key, session.iv);
       return this.userService.register({ ...userDto, password });
-      // return this.userService.register(userDto);
+      return this.userService.register(userDto);
     }
     throw new BadRequestException('Error Session');
   }
 
   @Public()
   @Get('register/:account')
-  @ApiOperation({ summary: '用户名检查', description: '检查用户名可用' })
-  @ApiParam({ name: 'account', description: '账号', required: true })
+  @ApiOperation({ summary: '邮箱检查', description: '检查邮箱可用' })
+  @ApiParam({ name: 'account', description: '邮箱', required: true })
   accountAvailable(@Param('account') account: string) {
     return this.userService.accountAvailable(account);
   }

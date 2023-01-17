@@ -12,5 +12,5 @@ export class CreateUserDto {
 
   @ApiProperty({ description: '验证码' })
   @IsNotEmpty()
-  readonly emailcode: string;
+  readonly captcha: string;
 }

@@ -1,1 +1,2 @@
-export * from './EmailContext';
+export * from './email.context';
+export * from './email.dto';

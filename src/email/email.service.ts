@@ -1,6 +1,6 @@
 import { ISendMailOptions, MailerService } from '@nestjs-modules/mailer';
 import { Injectable } from '@nestjs/common';
-import { EmailContext } from './dto/EmailContext';
+import { EmailContext } from './dto/email.context';
 import * as moment from 'moment';
 @Injectable()
 export class EmailService {
