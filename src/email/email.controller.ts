@@ -31,7 +31,8 @@ export class EmailController {
       )}`;
       const nextTime = moment().add(1, 'minutes');
       res.cookie('nextTime', nextTime);
-      await this.emailService.sendEmailCode(data);
+      console.log(data.code);
+      // await this.emailService.sendEmailCode(data);
     }
     res.send('ok');
   }

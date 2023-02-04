@@ -48,7 +48,7 @@ export class UserController {
   ) {}
 
   @Public()
-  @Post('register')
+  @Post()
   @ApiOperation({ summary: '创建用户', description: '创建用户' })
   @ApiBody({ type: CreateUserDto })
   register(@Session() session, @Body() userDto: CreateUserDto) {
@@ -61,20 +61,20 @@ export class UserController {
       }
       const password = Decrypt(userDto.password, session.key, session.iv);
       return this.userService.register({ ...userDto, password });
-      return this.userService.register(userDto);
+      // return this.userService.register(userDto);
     }
     throw new BadRequestException('Error Session');
   }
 
   @Public()
-  @Get('register/:account')
+  @Get('account/:account')
   @ApiOperation({ summary: '邮箱检查', description: '检查邮箱可用' })
   @ApiParam({ name: 'account', description: '邮箱', required: true })
   accountAvailable(@Param('account') account: string) {
     return this.userService.accountAvailable(account);
   }
 
-  @Post('upload/icon')
+  @Patch('icon')
   @UseInterceptors(FileInterceptor('icon'))
   @ApiConsumes('multipart/form-data')
   @ApiOperation({ summary: '上传用户头像', description: '上传用户头像' })
@@ -91,7 +91,7 @@ export class UserController {
     throw new BadRequestException(`This file type is not an image`);
   }
 
-  @Patch('upload/info')
+  @Patch()
   @ApiOperation({
     summary: '更新用户信息',
     description: '根据id更新用户信息',
@@ -101,7 +101,7 @@ export class UserController {
     return this.userService.updateUserInfo(id, userDto);
   }
 
-  @Delete('remove/info')
+  @Delete()
   @ApiOperation({ summary: '修改用户状态', description: '修改用户状态为false' })
   disableUserActiveStatus(@GetUser('id') id: string) {
     return this.userService.disableUserActiveStatus(id);

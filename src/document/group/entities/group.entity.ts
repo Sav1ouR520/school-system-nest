@@ -14,6 +14,9 @@ export class Group {
   @PrimaryGeneratedColumn('uuid', { comment: '唯一标识' })
   id: string;
 
+  @Column({ type: 'varchar', nullable: true, comment: '组图片' })
+  icon: string;
+
   @Column({ type: 'varchar', comment: '组名' })
   name: string;
 

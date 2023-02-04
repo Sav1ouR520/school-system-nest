@@ -7,7 +7,6 @@ import {
   Inject,
   Param,
   Patch,
-  Post,
   Query,
   UploadedFile,
   UseGuards,
@@ -34,7 +33,7 @@ import { SelectUserDto, UpdateUserDto, UpdateUserIconDto } from './dto';
 @Controller('user')
 @Roles(UserRole.ADMIN)
 @UseGuards(RoleGuard)
-@ApiTags('AdminController')
+@ApiTags('AdminUserController')
 @ApiBearerAuth()
 export class AdminController {
   constructor(
@@ -43,7 +42,7 @@ export class AdminController {
     private readonly userConfig: ConfigType<typeof UserConfig>,
   ) {}
 
-  @Get('find')
+  @Get()
   @ApiOperation({ summary: '查询所有用户', description: '查询所有用户' })
   findAll(
     @Query() paginationQuery: PaginationDto,
@@ -52,7 +51,7 @@ export class AdminController {
     return this.userService.findAll(paginationQuery, userDto);
   }
 
-  @Patch('upload/info/:id')
+  @Patch(':id')
   @ApiOperation({
     summary: '更新用户信息',
     description: '根据id更新用户信息',
@@ -65,7 +64,7 @@ export class AdminController {
     return this.userService.updateUserInfo(id, userDto);
   }
 
-  @Post('upload/icon')
+  @Patch('icon/:id')
   @UseInterceptors(FileInterceptor('icon'))
   @ApiConsumes('multipart/form-data')
   @ApiOperation({ summary: '上传用户头像', description: '上传用户头像' })
@@ -82,7 +81,7 @@ export class AdminController {
     throw new BadRequestException(`This file type is not an image`);
   }
 
-  @Delete('delete/:id')
+  @Delete(':id')
   @Roles(UserRole.ADMIN)
   @UseGuards(RoleGuard)
   @ApiOperation({ summary: '删除用户', description: '根据id删除用户' })

@@ -33,10 +33,10 @@ export class GroupService {
     return { data, message: 'Request data succeeded' };
   }
 
-  async createGroup(owner: string, groupDto: CreateGroupDto) {
+  async createGroup(owner: string, groupDto: CreateGroupDto, icon?: string) {
     const user = await this.userRepository.findOneBy({ id: owner });
     const name = user.username;
-    const group = this.groupRepository.create({ user, ...groupDto });
+    const group = this.groupRepository.create({ user, ...groupDto, icon });
     const role = MemberRole.ADMIN;
     return this.groupRepository.manager.transaction(
       async (transactionalEntityManager) => {

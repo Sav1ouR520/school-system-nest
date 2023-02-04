@@ -12,7 +12,7 @@ import { LoginUserDto } from './dto';
 import { Decrypt, GetUser, Public, captchaValidate } from 'src/common';
 import { RtGuard } from './guards';
 
-@Controller('auth')
+@Controller('user')
 @ApiTags('AuthController')
 @ApiBearerAuth()
 export class AuthController {
@@ -30,7 +30,7 @@ export class AuthController {
       }
       const password = Decrypt(userDto.password, session.key, session.iv);
       return this.authService.login({ ...userDto, password });
-      return this.authService.login(userDto);
+      // return this.authService.login(userDto);
     }
     throw new BadRequestException('Error Session');
   }

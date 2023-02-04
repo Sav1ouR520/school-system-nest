@@ -15,5 +15,5 @@ export class CreateTaskDto {
   readonly introduce?: string;
 
   @ApiProperty({ description: '前置文件', format: 'binary' })
-  readonly file?: any;
+  readonly icon?: any;
 }

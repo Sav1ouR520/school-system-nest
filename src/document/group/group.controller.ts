@@ -6,11 +6,20 @@ import {
   Param,
   Patch,
   Post,
+  UploadedFile,
+  UseInterceptors,
 } from '@nestjs/common';
-import { ApiTags, ApiBearerAuth, ApiOperation, ApiBody } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiBearerAuth,
+  ApiOperation,
+  ApiBody,
+  ApiConsumes,
+} from '@nestjs/swagger';
 import { GroupService } from './group.service';
 import { GetUser, UUIDvalidatePipe } from 'src/common';
 import { CreateGroupDto, UpdateGroupDto } from './dto';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 @Controller('group')
 @ApiTags('GroupController')
@@ -31,9 +40,16 @@ export class GroupController {
   }
 
   @Post()
+  @UseInterceptors(FileInterceptor('icon'))
+  @ApiConsumes('multipart/form-data')
   @ApiOperation({ summary: '创建组', description: '创建组' })
   @ApiBody({ type: CreateGroupDto })
-  createGroup(@GetUser('id') owner: string, @Body() groupDto: CreateGroupDto) {
+  createGroup(
+    @GetUser('id') owner: string,
+    @Body() groupDto: CreateGroupDto,
+    @UploadedFile() icon: Express.Multer.File,
+  ) {
+    console.log(icon);
     return this.groupService.createGroup(owner, groupDto);
   }
 
@@ -48,7 +64,7 @@ export class GroupController {
 
   @Patch()
   @ApiOperation({ summary: '修改组', description: '修改组' })
-  @ApiBody({ type: CreateGroupDto })
+  @ApiBody({ type: UpdateGroupDto })
   changeGroup(@GetUser('id') owner: string, @Body() groupDto: UpdateGroupDto) {
     return this.groupService.changeGroup(groupDto, owner);
   }

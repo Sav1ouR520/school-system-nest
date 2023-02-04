@@ -21,11 +21,11 @@ export class AuthService {
     const { account, password } = userDto;
     const user = await this.userRepository.findOneBy({ account });
     if (user && user.activeStatue && compareSync(password, user.password)) {
-      const token = await this.getTokens(user.id);
-      this.updateRefreshToken(user.id, (await token).token.refreshToken);
+      const tokens = await this.getTokens(user.id);
+      this.updateRefreshToken(user.id, tokens.refreshToken);
       return {
-        data: { ...token, validation: true },
-        message: 'login success',
+        data: { tokens, validation: true },
+        message: 'Login Successful',
       };
     }
     return {
@@ -39,10 +39,7 @@ export class AuthService {
       this.jwtService.signAsync({ id }, this.configService.acceptTokens),
       this.jwtService.signAsync({ id }, this.configService.refreshToken),
     ]);
-    return {
-      token: { accessToken, refreshToken },
-      message: 'Login Successful',
-    };
+    return { accessToken, refreshToken };
   }
 
   async updateRefreshToken(id: string, rt: string) {
@@ -63,7 +60,10 @@ export class AuthService {
     if (rtMatches) {
       const tokens = await this.getTokens(id);
       await this.updateRefreshToken(id, rt);
-      return tokens;
+      return {
+        data: { tokens },
+        message: 'Refresh Tokens Success',
+      };
     }
     throw new ForbiddenException('Access Denied');
   }
