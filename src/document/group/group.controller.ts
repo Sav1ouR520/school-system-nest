@@ -18,7 +18,7 @@ import {
 } from '@nestjs/swagger';
 import { GroupService } from './group.service';
 import { GetUser, UUIDvalidatePipe } from 'src/common';
-import { CreateGroupDto, UpdateGroupDto } from './dto';
+import { CreateGroupDto, CreateGroupWithIconDto, UpdateGroupDto } from './dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 
 @Controller('group')
@@ -43,13 +43,15 @@ export class GroupController {
   @UseInterceptors(FileInterceptor('icon'))
   @ApiConsumes('multipart/form-data')
   @ApiOperation({ summary: '创建组', description: '创建组' })
-  @ApiBody({ type: CreateGroupDto })
+  @ApiBody({ type: CreateGroupWithIconDto })
   createGroup(
     @GetUser('id') owner: string,
     @Body() groupDto: CreateGroupDto,
     @UploadedFile() icon: Express.Multer.File,
   ) {
-    console.log(icon);
+    if (icon) {
+      return this.groupService.createGroup(owner, groupDto, icon.filename);
+    }
     return this.groupService.createGroup(owner, groupDto);
   }
 

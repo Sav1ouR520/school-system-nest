@@ -4,12 +4,12 @@ import { AdminController } from './admin.controller';
 import { UserRepository } from './providers';
 import { UserController } from './user.controller';
 import { UserService } from './user.service';
-import { UserConfig, UserMulterModule } from './config';
+import { UserConfig, UserMulter } from './config';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true, load: [UserConfig] }),
-    UserMulterModule,
+    UserMulter,
   ],
   controllers: [UserController, AdminController],
   providers: [UserRepository, UserService],

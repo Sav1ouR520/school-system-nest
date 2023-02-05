@@ -1,2 +1,2 @@
 export * from './task.config';
-export * from './task.multer.module';
+export * from './task.multer';

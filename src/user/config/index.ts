@@ -1,2 +1,2 @@
 export * from './user.config';
-export * from './user.multer.module';
+export * from './user.multer';
