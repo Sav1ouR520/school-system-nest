@@ -2,7 +2,7 @@ import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { Like, Repository } from 'typeorm';
 import { User } from './entities';
 import { CreateUserDto, UpdateUserDto, SelectUserDto } from './dto';
-import { PaginationDto, RemoveFile } from 'src/common';
+import { PaginationDto, RemoveFile, ReturnData } from 'src/common';
 
 @Injectable()
 export class UserService {
@@ -11,27 +11,27 @@ export class UserService {
     private readonly userRepository: Repository<User>,
   ) {}
 
-  async accountAvailable(account: string) {
+  async accountAvailable(account: string): Promise<ReturnData> {
     const result = await this.userRepository.findOneBy({ account });
     return result
       ? {
-          data: { available: false },
+          action: false,
           message: `This ${account} has already been used`,
         }
       : {
-          data: { available: true },
+          action: true,
           message: `This ${account} can be used`,
         };
   }
 
-  async register(userDto: CreateUserDto) {
+  async register(userDto: CreateUserDto): Promise<ReturnData> {
     const result = await this.accountAvailable(userDto.account);
-    if (result.data.available) {
+    if (result.action) {
       const { account, password } = userDto;
       const user = this.userRepository.create({ account, password });
       this.userRepository.save(user);
       return {
-        data: { validation: true },
+        action: true,
         message: `User #${userDto.account} created successfully`,
       };
     }
@@ -40,7 +40,10 @@ export class UserService {
     );
   }
 
-  async findAll(paginationQuery: PaginationDto, userDto: SelectUserDto) {
+  async findAll(
+    paginationQuery: PaginationDto,
+    userDto: SelectUserDto,
+  ): Promise<ReturnData> {
     const { limit, offset } = paginationQuery;
     const condition = {};
     let key: keyof SelectUserDto;
@@ -58,27 +61,36 @@ export class UserService {
       take: limit,
     });
     const total = await this.userRepository.count({ where: condition });
-    return { data: { list, total }, message: 'Request data succeeded' };
+    return {
+      data: { list, total },
+      action: true,
+      message: 'Request data succeeded',
+    };
   }
 
-  async findUserById(id: string) {
+  async findUserById(id: string): Promise<ReturnData> {
     const user = await this.userRepository.findOneBy({ id });
-    return user ? user : new BadRequestException(`User #${id} does not exist`);
+    return user
+      ? { data: user, action: true, message: 'Request data succeeded' }
+      : { action: false, message: `User #${id} does not exist` };
   }
 
   async updateUserInfo(id: string, userDto: UpdateUserDto) {
     const user = await this.userRepository.findOneBy({ id });
     if (user.account !== userDto.account) {
       const result = await this.accountAvailable(userDto.account);
-      if (!result.data.available) {
+      if (!result.action) {
         return result;
       }
     }
-    this.userInfoModify(id, userDto.activeStatue, userDto);
-    return { message: 'Successfully updated user information' };
+    await this.userInfoModify(id, userDto.activeStatue, userDto);
+    return {
+      action: true,
+      message: 'Successfully updated user information',
+    };
   }
 
-  async updateUserIcon(id: string, icon: string) {
+  async updateUserIcon(id: string, icon: string): Promise<ReturnData> {
     const user = await this.userRepository.preload({ id, icon });
     if (!user) {
       throw new BadRequestException(`User #${id} does not exist`);
@@ -86,34 +98,53 @@ export class UserService {
     const oldIcon = (await this.userRepository.findOneBy({ id })).icon;
     RemoveFile(oldIcon);
     this.userRepository.save(user);
-    return { message: `Successfully modified User #${id} image` };
+    return {
+      action: true,
+      message: `Successfully modified User #${id} image`,
+    };
   }
 
-  async deleteUser(id: string) {
+  async deleteUser(id: string): Promise<ReturnData> {
     const result = await this.userRepository.delete({ id });
     return result.affected === 1
-      ? { message: 'User has been deleted' }
-      : { message: 'Failed to delete user' };
+      ? {
+          action: true,
+          message: 'User has been deleted',
+        }
+      : {
+          action: false,
+          message: 'Failed to delete user',
+        };
   }
 
-  async disableUserActiveStatus(id: string) {
+  async disableUserActiveStatus(id: string): Promise<ReturnData> {
     await this.userInfoModify(id, false);
-    return { message: 'User has been deleted' };
+    return {
+      action: false,
+      message: 'User has been deleted',
+    };
   }
 
   async userInfoModify(
     id: string,
     activeStatue = true,
     userDto?: UpdateUserDto,
-  ) {
+  ): Promise<ReturnData> {
     const user = await this.userRepository.preload({
       id,
       ...userDto,
       activeStatue,
     });
     if (!user) {
-      throw new BadRequestException(`User #${id} does not exist`);
+      return {
+        action: false,
+        message: `User #${id} does not exist`,
+      };
     }
-    return this.userRepository.save(user);
+    await this.userRepository.save(user);
+    return {
+      action: true,
+      message: `Successfully modified User #${id}`,
+    };
   }
 }

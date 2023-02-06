@@ -5,6 +5,6 @@ export const AppEnvConfig = registerAs('EnvConfig', () => ({
   defaultVersion: fromEnvGetValue('APP_DEFAULT_VERSION'),
   globalPrefix: fromEnvGetValue('APP_GLOBAL_PREFIX'),
   appListenPort: +fromEnvGetValue('APP_LISTEN_PORT'),
-  userIconPath: fromEnvGetValue('USER_ICON_PATH'),
+  staticPath: fromEnvGetValue('STATIC_PATH'),
   sessionSecret: fromEnvGetValue('SESSION_SECRET'),
 }));

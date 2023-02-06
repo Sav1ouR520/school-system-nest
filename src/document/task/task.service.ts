@@ -10,6 +10,24 @@ export class TaskService {
     private readonly TaskRepository: Repository<Task>,
   ) {}
 
+  async beforeAction(
+    id: string,
+    createUser: string,
+    activeStatue = true,
+    dataPath?: string,
+  ) {
+    const task = await this.TaskRepository.findOneBy({
+      id,
+      createUser,
+      dataPath,
+      activeStatue,
+    });
+    if (!task) {
+      throw new BadRequestException(`
+The task #${id} does not exist or the user #${createUser} exceeds permissions`);
+    }
+  }
+
   async findtaskByGroupId(
     groupId: string,
     createUser: string,
@@ -35,15 +53,7 @@ export class TaskService {
   }
 
   async deleteTask(id: string, createUser: string, activeStatue = true) {
-    const task = await this.TaskRepository.findOneBy({
-      id,
-      createUser,
-      activeStatue,
-    });
-    if (!task) {
-      throw new BadRequestException(`
-The task #${id} does not exist or the user #${createUser} exceeds permissions`);
-    }
+    await this.beforeAction(id, createUser, activeStatue);
     const result = await this.TaskRepository.preload({
       id,
       activeStatue: false,
@@ -58,16 +68,8 @@ The task #${id} does not exist or the user #${createUser} exceeds permissions`);
     dataPath?: string,
     activeStatue = true,
   ) {
-    const task = await this.TaskRepository.findOneBy({
-      id: taskDto.id,
-      dataPath,
-      createUser,
-      activeStatue,
-    });
-    if (!task) {
-      throw new BadRequestException(`
-The task #${taskDto.id} does not exist or the user #${createUser} exceeds permissions`);
-    }
+    const { id } = taskDto;
+    await this.beforeAction(id, createUser, activeStatue, dataPath);
     const result = await this.TaskRepository.preload(taskDto);
     await this.TaskRepository.save(result);
     return { message: `Successfully updated task #${taskDto.id} information` };

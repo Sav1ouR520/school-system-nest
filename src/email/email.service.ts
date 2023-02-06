@@ -2,10 +2,11 @@ import { ISendMailOptions, MailerService } from '@nestjs-modules/mailer';
 import { Injectable } from '@nestjs/common';
 import { EmailContext } from './dto/email.context';
 import * as moment from 'moment';
+import { ReturnData } from 'src/common';
 @Injectable()
 export class EmailService {
   constructor(private readonly mailerService: MailerService) {}
-  async sendEmailCode(data: EmailContext) {
+  async sendEmailCode(data: EmailContext): Promise<ReturnData> {
     const sendMailOptions: ISendMailOptions = {
       to: data.to,
       subject: data.subject,
@@ -17,6 +18,6 @@ export class EmailService {
       },
     };
     await this.mailerService.sendMail(sendMailOptions);
-    return { message: '发送成功' };
+    return { action: true, message: '发送成功' };
   }
 }

@@ -1,11 +1,11 @@
-import { IsNotEmpty, IsNumber, IsUUID } from 'class-validator';
+import { IsNotEmpty, IsUUID } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { CreateMemberInfo } from './create-member.dto';
 
 export class UploadMemberOtherInfo extends CreateMemberInfo {
   @ApiProperty({ description: '唯一标识' })
-  @IsNumber()
-  id: number;
+  @IsUUID()
+  id: string;
 
   @ApiProperty({ description: '群名' })
   @IsNotEmpty()

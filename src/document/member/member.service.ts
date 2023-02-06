@@ -1,6 +1,6 @@
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { Repository } from 'typeorm';
-import { Group, User } from 'src/common';
+import { Group, ReturnData, User } from 'src/common';
 import { CreateMemberDto, UploadMemberDto, deleteMemberDto } from './dto';
 import { Member } from './entities';
 
@@ -28,7 +28,10 @@ export class MemberService {
     }
   }
 
-  async addMember(memberDto: CreateMemberDto, onwer: string) {
+  async addMember(
+    memberDto: CreateMemberDto,
+    onwer: string,
+  ): Promise<ReturnData> {
     const { groupId } = memberDto;
     const members: Member[] = [];
     await this.beforeAction(groupId, onwer);
@@ -46,10 +49,16 @@ export class MemberService {
         await transactionalEntityManager.save(members);
       },
     );
-    return { message: 'Member added successfully' };
+    return {
+      action: true,
+      message: 'Member added successfully',
+    };
   }
 
-  async deleteMember(memberDto: deleteMemberDto, onwer: string) {
+  async deleteMember(
+    memberDto: deleteMemberDto,
+    onwer: string,
+  ): Promise<ReturnData> {
     const { groupId } = memberDto;
     const members: Member[] = [];
     await this.beforeAction(groupId, onwer);
@@ -73,10 +82,16 @@ export class MemberService {
         await transactionalEntityManager.delete(Member, members);
       },
     );
-    return { message: 'Member deleted successfully' };
+    return {
+      action: true,
+      message: 'Member deleted successfully',
+    };
   }
 
-  async modifyMember(memberDto: UploadMemberDto, onwer: string) {
+  async modifyMember(
+    memberDto: UploadMemberDto,
+    onwer: string,
+  ): Promise<ReturnData> {
     const { groupId } = memberDto;
     const members: Member[] = [];
     await this.beforeAction(groupId, onwer);
@@ -102,6 +117,9 @@ export class MemberService {
         await transactionalEntityManager.save(members);
       },
     );
-    return { message: 'Member deleted successfully' };
+    return {
+      action: true,
+      message: 'Member deleted successfully',
+    };
   }
 }

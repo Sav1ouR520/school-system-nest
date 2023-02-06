@@ -1,10 +1,10 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsUUID, IsNotEmpty, IsNumber } from 'class-validator';
+import { IsUUID, IsNotEmpty } from 'class-validator';
 
 export class deleteMemberInfo {
   @ApiProperty({ description: '唯一标识' })
-  @IsNumber()
-  id: number;
+  @IsUUID()
+  id: string;
 
   @ApiProperty({ description: '用户id' })
   @IsUUID()

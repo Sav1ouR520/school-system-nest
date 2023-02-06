@@ -3,6 +3,7 @@ import {
   FileRepository,
   GroupRepository,
   MemberRepository,
+  MessageRepository,
   TaskRepository,
   UserRepository,
 } from '../providers';
@@ -14,6 +15,7 @@ import {
     TaskRepository,
     UserRepository,
     FileRepository,
+    MessageRepository,
   ],
   exports: [
     GroupRepository,
@@ -21,6 +23,7 @@ import {
     TaskRepository,
     UserRepository,
     FileRepository,
+    MessageRepository,
   ],
 })
 export class RepositoryModule {}

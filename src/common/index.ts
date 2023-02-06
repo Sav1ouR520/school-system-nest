@@ -10,3 +10,4 @@ export * from './module';
 export * from './pipe';
 export * from './providers';
 export * from './uitls';
+export * from './interface';

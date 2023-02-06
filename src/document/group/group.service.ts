@@ -2,7 +2,7 @@ import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { Repository } from 'typeorm';
 import { CreateGroupDto, UpdateGroupDto } from './dto';
 import { MemberRole } from '../member/enum';
-import { Member, User } from 'src/common';
+import { Member, ReturnData, User } from 'src/common';
 import { Group } from './entities';
 
 @Injectable()
@@ -16,24 +16,31 @@ export class GroupService {
     private readonly memberRepository: Repository<Member>,
   ) {}
 
-  async findGroupByOwner(owner: string, activeStatue = true) {
+  async findGroupByOwner(
+    owner: string,
+    activeStatue = true,
+  ): Promise<ReturnData> {
     const groups = await this.groupRepository.find({
       where: { owner, activeStatue },
       relations: ['member'],
     });
     const data = groups ? groups : [];
-    return { data, message: 'Request data succeeded' };
+    return { data, action: true, message: 'Request data succeeded' };
   }
 
-  async findGroupByUserId(userId: string) {
+  async findGroupByUserId(userId: string): Promise<ReturnData> {
     const data = await this.memberRepository.find({
       where: { userId },
       relations: ['group'],
     });
-    return { data, message: 'Request data succeeded' };
+    return { data, action: true, message: 'Request data succeeded' };
   }
 
-  async createGroup(owner: string, groupDto: CreateGroupDto, icon?: string) {
+  async createGroup(
+    owner: string,
+    groupDto: CreateGroupDto,
+    icon?: string,
+  ): Promise<ReturnData> {
     const user = await this.userRepository.findOneBy({ id: owner });
     const name = user.username;
     const group = this.groupRepository.create({ user, ...groupDto, icon });
@@ -44,22 +51,31 @@ export class GroupService {
         const member = { group, user, role, name };
         const entity = this.memberRepository.create(member);
         await transactionalEntityManager.save(entity);
-        return { message: `Group #${group.id} created successfully` };
+        return {
+          action: true,
+          message: `Group #${group.id} created successfully`,
+        };
       },
     );
   }
 
-  async deleteGroup(id: string, owner: string) {
+  async deleteGroup(id: string, owner: string): Promise<ReturnData> {
     await this.beforeAction(id, owner);
     const result = await this.groupRepository.preload({
       id,
       activeStatue: false,
     });
     const { name } = await this.groupRepository.save(result);
-    return { message: `Group #${name} has been deleted` };
+    return {
+      action: true,
+      message: `Group #${name} has been deleted`,
+    };
   }
 
-  async changeGroup(groupDto: UpdateGroupDto, owner: string) {
+  async changeGroup(
+    groupDto: UpdateGroupDto,
+    owner: string,
+  ): Promise<ReturnData> {
     await this.beforeAction(groupDto.id, owner);
     const user = await this.userRepository.findOneBy({ id: groupDto.owner });
     if (!user) {
@@ -67,7 +83,10 @@ export class GroupService {
     }
     const result = await this.groupRepository.preload(groupDto);
     this.groupRepository.save(result);
-    return { message: 'Successfully updated group information' };
+    return {
+      action: true,
+      message: 'Successfully updated group information',
+    };
   }
 
   async beforeAction(id: string, owner: string) {

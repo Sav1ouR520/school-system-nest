@@ -2,6 +2,7 @@ import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { User } from 'src/user/entities/user.entity';
 import { UserService } from 'src/user/user.service';
+import { ReturnData } from '..';
 
 @Injectable()
 export class StatusGuard implements CanActivate {
@@ -17,8 +18,10 @@ export class StatusGuard implements CanActivate {
     if (isPulic) return true;
     const user = context.switchToHttp().getRequest()['user'];
     if (user) {
-      const result = this.userService.findUserById(user.id) as Promise<User>;
-      return (await result).activeStatue;
+      const result = this.userService.findUserById(user.id) as Promise<
+        ReturnData<User>
+      >;
+      return (await result).data.activeStatue;
     }
     return false;
   }

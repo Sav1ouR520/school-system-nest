@@ -1,3 +1,4 @@
+import { Group, User } from 'src/common';
 import {
   Column,
   CreateDateColumn,
@@ -6,16 +7,11 @@ import {
   ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { MemberRole } from '../enum';
-import { Group, User } from 'src/common';
 
 @Entity()
-export class Member {
+export class Message {
   @PrimaryGeneratedColumn('uuid', { comment: '唯一标识' })
   id: string;
-
-  @Column({ type: 'varchar', comment: '群名' })
-  name: string;
 
   @Column({ type: 'varchar', comment: '组id' })
   groupId: string;
@@ -23,19 +19,14 @@ export class Member {
   @Column({ type: 'varchar', comment: '用户id' })
   userId: string;
 
-  @Column({
-    type: 'enum',
-    enum: MemberRole,
-    default: MemberRole.USER,
-    comment: '用户权限',
-  })
-  role: MemberRole;
+  @Column({ type: 'varchar', comment: '信息内容' })
+  content: string;
 
   @CreateDateColumn({
     type: 'timestamp without time zone',
-    comment: '加入时间',
+    comment: '发送时间',
   })
-  joinTime: string;
+  sendTime: string;
 
   @ManyToOne(() => User, (user) => user.member, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'userId' })
