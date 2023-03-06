@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsString, IsUUID } from 'class-validator';
+import { IsNotEmpty, IsUUID } from 'class-validator';
 
 export class CreateTaskDto {
   @ApiProperty({ description: '任务名' })
@@ -8,12 +8,14 @@ export class CreateTaskDto {
 
   @ApiProperty({ description: '组id' })
   @IsUUID()
-  readonly groudId: string;
+  readonly groupId: string;
 
   @ApiProperty({ description: '任务简介' })
-  @IsString()
-  readonly introduce?: string;
+  @IsNotEmpty()
+  readonly introduce: string;
+}
 
+export class CreateTaskWithFile extends CreateTaskDto {
   @ApiProperty({ description: '前置文件', format: 'binary' })
-  readonly icon?: any;
+  readonly file?: string;
 }

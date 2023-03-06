@@ -10,59 +10,73 @@ import {
   Body,
   Controller,
   Get,
-  Inject,
   Param,
   Patch,
   Post,
   UploadedFile,
+  UseInterceptors,
 } from '@nestjs/common';
 import { GetUser, UUIDvalidatePipe } from 'src/common';
-import { FileConfig } from './config/file.config';
-import { ConfigType } from '@nestjs/config';
-import { FileDto } from './dto';
+import {
+  CreateFileDto,
+  CreateFileWithDataDto,
+  UpdateFileDto,
+  UpdateFileWithDataDto,
+} from './dto';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 @Controller('file')
 @ApiTags('FileController')
 @ApiBearerAuth()
 export class FileController {
-  constructor(
-    private readonly fileService: FileService,
-    @Inject(FileConfig.KEY)
-    private readonly fileConfig: ConfigType<typeof FileConfig>,
-  ) {}
+  constructor(private readonly fileService: FileService) {}
 
   @Get(':taskId')
   @ApiOperation({ summary: '查看上传文件', description: '查看上传文件' })
   checkFile(
     @Param('taskId', UUIDvalidatePipe) taskId: string,
-    @GetUser('id') uploadUser: string,
+    @GetUser('id') userId: string,
   ) {
-    return this.fileService.checkFileByUserId(taskId, uploadUser);
+    return this.fileService.checkFileByUserId(taskId, userId);
+  }
+
+  @Get('taskId/:taskId')
+  @ApiOperation({ summary: '查看上传文件', description: '查看上传文件' })
+  findFileBytaskId(
+    @Param('taskId', UUIDvalidatePipe) taskId: string,
+    @GetUser('id') userId: string,
+  ) {
+    return this.fileService.findFileBytaskId(taskId, userId);
   }
 
   @Post()
-  @ApiOperation({ summary: '上传文件', description: '上传文件' })
+  @UseInterceptors(FileInterceptor('file'))
   @ApiConsumes('multipart/form-data')
-  @ApiBody({ type: FileDto })
+  @ApiBody({ type: CreateFileWithDataDto })
+  @ApiOperation({ summary: '上传文件', description: '上传文件' })
   uploadFile(
-    @Body() fileDto: FileDto,
+    @Body() fileDto: CreateFileDto,
     @UploadedFile() file: Express.Multer.File,
-    @GetUser('id') uploadUser: string,
+    @GetUser('id') userId: string,
   ) {
-    const filePath = this.fileConfig.fileUploadPath + file.filename;
-    return this.fileService.uploadFile(fileDto.taskId, uploadUser, filePath);
+    return this.fileService.uploadFile(fileDto.taskId, userId, file.filename);
   }
 
   @Patch()
+  @UseInterceptors(FileInterceptor('file'))
   @ApiOperation({ summary: '修改文件', description: '修改文件' })
   @ApiConsumes('multipart/form-data')
-  @ApiBody({ type: FileDto })
+  @ApiBody({ type: UpdateFileWithDataDto })
   updateFile(
-    @Body() fileDto: FileDto,
+    @Body() fileDto: UpdateFileDto,
     @UploadedFile() file: Express.Multer.File,
-    @GetUser('id') uploadUser: string,
+    @GetUser('id') userId: string,
   ) {
-    const filePath = this.fileConfig.fileUploadPath + file.filename;
-    return this.fileService.updateFile(fileDto.taskId, uploadUser, filePath);
+    return this.fileService.updateFile(
+      fileDto.id,
+      fileDto.taskId,
+      userId,
+      file.filename,
+    );
   }
 }

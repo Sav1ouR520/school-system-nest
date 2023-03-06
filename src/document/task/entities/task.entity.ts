@@ -21,27 +21,24 @@ export class Task {
   introduce: string;
 
   @Column({ type: 'uuid', comment: '任务创建者' })
-  createUser: string;
+  memberId: string;
 
   @Column({ type: 'uuid', comment: '组id' })
   groupId: string;
 
   @Column({ type: 'boolean', default: true, comment: '激活状态' })
-  activeStatue: boolean;
-
-  @Column({ type: 'boolean', comment: '是否有前置材料', default: false })
-  hasData: boolean;
+  activeStatus: boolean;
 
   @Column({ type: 'varchar', comment: '前置材料存放路径', nullable: true })
   dataPath: string;
 
   @CreateDateColumn({
-    type: 'timestamp without time zone',
+    type: 'timestamp',
     comment: '创建时间',
   })
-  createTime: string;
+  createTime: Date;
 
-  @ManyToOne(() => Group, (group) => group.task)
+  @ManyToOne(() => Group, (group) => group.task, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'groupId' })
   group: Group;
 

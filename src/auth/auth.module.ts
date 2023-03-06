@@ -14,5 +14,6 @@ import { JWTConfig } from './config';
   ],
   controllers: [AuthController],
   providers: [RtStrategy, AtStrategy, AuthService, UserRepository],
+  exports: [AuthService],
 })
 export class AuthModule {}

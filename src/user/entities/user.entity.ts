@@ -28,10 +28,10 @@ export class User {
   activeStatue: boolean;
 
   @CreateDateColumn({
-    type: 'timestamp without time zone',
+    type: 'timestamp',
     comment: '注册时间',
   })
-  registerTime: string;
+  registerTime: Date;
 
   @Column({ type: 'varchar', nullable: true, comment: 'Refresh Token' })
   refreshToken: string;

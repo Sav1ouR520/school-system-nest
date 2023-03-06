@@ -24,13 +24,13 @@ export class Group {
   owner: string;
 
   @CreateDateColumn({
-    type: 'timestamp without time zone',
+    type: 'timestamp',
     comment: '创建时间',
   })
-  createTime: string;
+  createTime: Date;
 
   @Column({ type: 'boolean', default: true, comment: '激活状态' })
-  activeStatue: boolean;
+  activeStatus: boolean;
 
   @ManyToOne(() => User, (user) => user.group, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'owner' })

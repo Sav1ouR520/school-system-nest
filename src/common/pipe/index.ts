@@ -1,2 +1,2 @@
 export * from './not-empty.pipe';
-export * from './uuidValidate.pipe';
+export * from './uuid-validate.pipe';

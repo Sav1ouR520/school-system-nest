@@ -45,6 +45,30 @@ export class AuthService {
     };
   }
 
+  verifyAccessToken(accessToken: string) {
+    try {
+      const result = this.jwtService.verify(
+        accessToken,
+        this.configService.acceptTokens,
+      );
+      return result ? true : false;
+    } catch (error) {
+      return false;
+    }
+  }
+
+  verifyRefreshToken(accessToken: string) {
+    try {
+      const result = this.jwtService.verify(
+        accessToken,
+        this.configService.refreshToken,
+      );
+      return result ? true : false;
+    } catch (error) {
+      return false;
+    }
+  }
+
   async refreshToken(id: string, rt: string): Promise<ReturnData> {
     const user = await this.userRepository.findOneBy({ id });
     const rtMatches = compareSync(rt, user.refreshToken);

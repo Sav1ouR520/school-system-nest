@@ -42,7 +42,7 @@ export class AdminController {
     private readonly userConfig: ConfigType<typeof UserConfig>,
   ) {}
 
-  @Get()
+  @Get('all')
   @ApiOperation({ summary: '查询所有用户', description: '查询所有用户' })
   findAll(
     @Query() paginationQuery: PaginationDto,

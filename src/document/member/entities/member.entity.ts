@@ -4,10 +4,11 @@ import {
   Entity,
   JoinColumn,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { MemberRole } from '../enum';
-import { Group, User } from 'src/common';
+import { Group, User, File } from 'src/common';
 
 @Entity()
 export class Member {
@@ -32,10 +33,10 @@ export class Member {
   role: MemberRole;
 
   @CreateDateColumn({
-    type: 'timestamp without time zone',
+    type: 'timestamp',
     comment: '加入时间',
   })
-  joinTime: string;
+  joinTime: Date;
 
   @ManyToOne(() => User, (user) => user.member, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'userId' })
@@ -44,4 +45,7 @@ export class Member {
   @ManyToOne(() => Group, (group) => group.member, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'groupId' })
   group: Group;
+
+  @OneToMany(() => File, (file) => file.member)
+  file: File;
 }

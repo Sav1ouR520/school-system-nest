@@ -18,7 +18,12 @@ import {
 } from '@nestjs/swagger';
 import { GroupService } from './group.service';
 import { GetUser, UUIDvalidatePipe } from 'src/common';
-import { CreateGroupDto, CreateGroupWithIconDto, UpdateGroupDto } from './dto';
+import {
+  CreateGroupDto,
+  CreateGroupWithIconDto,
+  UpdateGroupDto,
+  UpdateGroupWithFileDto,
+} from './dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 
 @Controller('group')
@@ -31,6 +36,11 @@ export class GroupController {
   @ApiOperation({ summary: '查找组', description: '查找自己管理的组' })
   findGroupByOwner(@GetUser('id') owner: string) {
     return this.groupService.findGroupByOwner(owner);
+  }
+  @Get('id/:id')
+  @ApiOperation({ summary: '查找组', description: '通过id查找组' })
+  findGroupByGroupId(@Param('id', UUIDvalidatePipe) id: string) {
+    return this.groupService.findGroupByGroupId(id);
   }
 
   @Get('user')
@@ -65,9 +75,18 @@ export class GroupController {
   }
 
   @Patch()
+  @UseInterceptors(FileInterceptor('icon'))
+  @ApiConsumes('multipart/form-data')
   @ApiOperation({ summary: '修改组', description: '修改组' })
-  @ApiBody({ type: UpdateGroupDto })
-  changeGroup(@GetUser('id') owner: string, @Body() groupDto: UpdateGroupDto) {
-    return this.groupService.changeGroup(groupDto, owner);
+  @ApiBody({ type: UpdateGroupWithFileDto })
+  modifyGroup(
+    @GetUser('id') owner: string,
+    @Body() groupDto: UpdateGroupDto,
+    @UploadedFile() icon: Express.Multer.File,
+  ) {
+    if (icon) {
+      return this.groupService.modifyGroup(groupDto, owner, icon.filename);
+    }
+    return this.groupService.modifyGroup(groupDto, owner);
   }
 }

@@ -13,7 +13,8 @@ export const TaskMulter = MulterModule.registerAsync({
     path: ConfigType<typeof PathConfig>,
   ) => ({
     fileFilter(_, file, callback) {
-      callback(null, true);
+      const fileType = file.mimetype.split('/')[1];
+      fileType == 'zip' ? callback(null, true) : callback(null, false);
     },
     storage: diskStorage({
       destination: join(path.rootPath, config.taskUploadPath),

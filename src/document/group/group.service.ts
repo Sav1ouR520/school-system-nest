@@ -18,10 +18,10 @@ export class GroupService {
 
   async findGroupByOwner(
     owner: string,
-    activeStatue = true,
+    activeStatus = true,
   ): Promise<ReturnData> {
     const groups = await this.groupRepository.find({
-      where: { owner, activeStatue },
+      where: { owner, activeStatus },
       relations: ['member'],
     });
     const data = groups ? groups : [];
@@ -29,11 +29,34 @@ export class GroupService {
   }
 
   async findGroupByUserId(userId: string): Promise<ReturnData> {
-    const data = await this.memberRepository.find({
-      where: { userId },
-      relations: ['group'],
-    });
+    const data = await this.memberRepository
+      .createQueryBuilder('member')
+      .innerJoinAndSelect(
+        'member.group',
+        'group',
+        'group.activeStatus = :activeStatus',
+        {
+          activeStatus: true,
+        },
+      )
+      .where({ userId })
+      .getMany();
     return { data, action: true, message: 'Request data succeeded' };
+  }
+
+  async findGroupByGroupId(
+    id: string,
+    activeStatus = true,
+  ): Promise<ReturnData> {
+    const data = await this.groupRepository.findOneBy({ id, activeStatus });
+    if (!data) {
+      throw new BadRequestException(`The Group #${id} does not exist`);
+    }
+    return {
+      data,
+      action: true,
+      message: 'Request data succeeded',
+    };
   }
 
   async createGroup(
@@ -63,7 +86,7 @@ export class GroupService {
     await this.beforeAction(id, owner);
     const result = await this.groupRepository.preload({
       id,
-      activeStatue: false,
+      activeStatus: false,
     });
     const { name } = await this.groupRepository.save(result);
     return {
@@ -72,17 +95,18 @@ export class GroupService {
     };
   }
 
-  async changeGroup(
+  async modifyGroup(
     groupDto: UpdateGroupDto,
     owner: string,
+    icon?: string,
   ): Promise<ReturnData> {
     await this.beforeAction(groupDto.id, owner);
     const user = await this.userRepository.findOneBy({ id: groupDto.owner });
     if (!user) {
       throw new BadRequestException(`User #${groupDto.owner} does not exist`);
     }
-    const result = await this.groupRepository.preload(groupDto);
-    this.groupRepository.save(result);
+    const result = await this.groupRepository.preload({ ...groupDto, icon });
+    await this.groupRepository.save(result);
     return {
       action: true,
       message: 'Successfully updated group information',

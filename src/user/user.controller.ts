@@ -47,6 +47,12 @@ export class UserController {
     private readonly pathConfig: ConfigType<typeof PathConfig>,
   ) {}
 
+  @Get()
+  @ApiOperation({ summary: '获取用户信息', description: '获取用户信息' })
+  getUserInfo(@GetUser('id') id: string) {
+    return this.userService.findUserById(id);
+  }
+
   @Public()
   @Post()
   @ApiOperation({ summary: '创建用户', description: '创建用户' })

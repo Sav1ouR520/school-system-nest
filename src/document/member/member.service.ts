@@ -15,17 +15,51 @@ export class MemberService {
     private readonly userRepository: Repository<User>,
   ) {}
 
-  async beforeAction(id: string, owner: string, activeStatue = true) {
+  async beforeAction(
+    id: string,
+    owner?: string,
+    activeStatus = true,
+    checkOwner = false,
+  ) {
     const group = await this.groupRepository.findOneBy({
       id,
       owner,
-      activeStatue,
+      activeStatus,
     });
     if (!group) {
-      throw new BadRequestException(
-        `The group #${id} does not belong to this user #${owner}`,
-      );
+      if (checkOwner) {
+        throw new BadRequestException(
+          `The group #${id} does not belong to this user #${owner}`,
+        );
+      } else {
+        throw new BadRequestException(`The group #${id} does not exist`);
+      }
     }
+  }
+
+  async findMember(groupId: string): Promise<ReturnData> {
+    await this.beforeAction(groupId);
+    const data = await this.memberRepository.find({
+      where: { groupId },
+      relations: ['user'],
+    });
+    const members = [];
+    data.map((member) => {
+      members.push({
+        id: member.id,
+        groupId: member.groupId,
+        userId: member.userId,
+        name: member.name,
+        role: member.role,
+        joinTime: member.joinTime,
+        icon: member.user.icon,
+      });
+    });
+    return {
+      data: members,
+      action: true,
+      message: 'Request data succeeded',
+    };
   }
 
   async addMember(

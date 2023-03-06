@@ -32,7 +32,7 @@ export class EmailController {
       const nextTime = moment().add(1, 'minutes');
       res.cookie('nextTime', nextTime);
       console.log(data.code);
-      // await this.emailService.sendEmailCode(data);
+      await this.emailService.sendEmailCode(data);
     }
     res.send('ok');
   }
