@@ -1,4 +1,4 @@
-import { Group, File } from 'src/common';
+import { Group, File, Member } from 'src/common';
 import {
   Column,
   CreateDateColumn,
@@ -41,6 +41,10 @@ export class Task {
   @ManyToOne(() => Group, (group) => group.task, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'groupId' })
   group: Group;
+
+  @ManyToOne(() => Member, (member) => member.task, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'memberId' })
+  member: Member;
 
   @OneToMany(() => File, (file) => file.task)
   file: File[];

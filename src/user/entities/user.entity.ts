@@ -15,7 +15,7 @@ export class User {
   @PrimaryGeneratedColumn('uuid', { comment: '唯一标识' })
   id: string;
 
-  @Column({ type: 'varchar', comment: '账号名称', length: 20, default: '' })
+  @Column({ type: 'varchar', comment: '账号名称', length: 20 })
   username: string;
 
   @Column({ type: 'varchar', comment: '登录账号', unique: true })

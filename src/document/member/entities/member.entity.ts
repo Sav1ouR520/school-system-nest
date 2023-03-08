@@ -8,7 +8,7 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { MemberRole } from '../enum';
-import { Group, User, File } from 'src/common';
+import { Group, User, File, Task } from 'src/common';
 
 @Entity()
 export class Member {
@@ -47,5 +47,8 @@ export class Member {
   group: Group;
 
   @OneToMany(() => File, (file) => file.member)
-  file: File;
+  file: File[];
+
+  @OneToMany(() => Task, (task) => task.member)
+  task: Task[];
 }

@@ -66,6 +66,23 @@ export class TaskService {
     return await this.checkMemberExist(task.groupId, userId, checkRole);
   }
 
+  async findtaskInfoByTaskId(
+    taskId: string,
+    userId: string,
+    activeStatus = true,
+  ): Promise<ReturnData> {
+    await this.beforeActionWithTaskId(taskId, userId);
+    const data = await this.taskRepository.findOne({
+      where: { id: taskId, activeStatus },
+      relations: ['member'],
+    });
+    return {
+      data,
+      action: true,
+      message: 'Request data succeeded',
+    };
+  }
+
   async findtaskByTaskId(
     taskId: string,
     userId: string,
@@ -78,12 +95,13 @@ export class TaskService {
     );
     const task = await this.taskRepository.findOne({
       where: { id: taskId, activeStatus },
+      relations: ['member'],
     });
     const File = await this.fileRepository.findOne({
-      where: { taskId, memberId: member.id },
+      where: { taskId, memberId: member.id, status: true },
     });
     return {
-      data: { task, member, File },
+      data: { task, File },
       action: true,
       message: 'Request data succeeded',
     };

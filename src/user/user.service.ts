@@ -27,8 +27,7 @@ export class UserService {
   async register(userDto: CreateUserDto): Promise<ReturnData> {
     const result = await this.accountAvailable(userDto.account);
     if (result.action) {
-      const { account, password } = userDto;
-      const user = this.userRepository.create({ account, password });
+      const user = this.userRepository.create(userDto);
       this.userRepository.save(user);
       return {
         action: true,

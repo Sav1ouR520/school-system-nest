@@ -32,6 +32,15 @@ import {
 export class TaskController {
   constructor(private readonly taskService: TaskService) {}
 
+  @Get(':taskId')
+  @ApiOperation({ summary: '查找任务', description: '查找任务' })
+  findtaskInfoByTaskId(
+    @Param('taskId', UUIDvalidatePipe) taskId: string,
+    @GetUser('id') userId: string,
+  ) {
+    return this.taskService.findtaskInfoByTaskId(taskId, userId);
+  }
+
   @Get('taskId/:taskId')
   @ApiOperation({ summary: '查找任务', description: '查找任务' })
   findTaskByTaskId(

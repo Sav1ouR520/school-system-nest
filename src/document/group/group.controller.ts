@@ -37,10 +37,32 @@ export class GroupController {
   findGroupByOwner(@GetUser('id') owner: string) {
     return this.groupService.findGroupByOwner(owner);
   }
+
   @Get('id/:id')
   @ApiOperation({ summary: '查找组', description: '通过id查找组' })
-  findGroupByGroupId(@Param('id', UUIDvalidatePipe) id: string) {
-    return this.groupService.findGroupByGroupId(id);
+  findGroupByGroupId(
+    @Param('id', UUIDvalidatePipe) id: string,
+    @GetUser('id') userId: string,
+  ) {
+    return this.groupService.findGroupByGroupId(id, userId);
+  }
+
+  @Get('refreshCode/:groupId')
+  @ApiOperation({ summary: '获取组邀请码', description: '获取组邀请码' })
+  updateInviteCode(
+    @Param('groupId', UUIDvalidatePipe) groupId: string,
+    @GetUser('id') userId: string,
+  ) {
+    return this.groupService.updateInviteCode(groupId, userId);
+  }
+
+  @Get('getCode/:groupId')
+  @ApiOperation({ summary: '获取组邀请码', description: '获取组邀请码' })
+  getGroupInviteCode(
+    @Param('groupId', UUIDvalidatePipe) groupId: string,
+    @GetUser('id') userId: string,
+  ) {
+    return this.groupService.getGroupInviteCode(groupId, userId);
   }
 
   @Get('user')

@@ -9,6 +9,7 @@ import { FileService } from './file.service';
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   Patch,
@@ -38,6 +39,15 @@ export class FileController {
     @GetUser('id') userId: string,
   ) {
     return this.fileService.checkFileByUserId(taskId, userId);
+  }
+
+  @Delete(':fileId')
+  @ApiOperation({ summary: '撤回上传文件', description: '撤回上传文件' })
+  goBackFileByTaskId(
+    @Param('fileId', UUIDvalidatePipe) fileId: string,
+    @GetUser('id') userId: string,
+  ) {
+    return this.fileService.goBackFileByTaskId(fileId, userId);
   }
 
   @Get('taskId/:taskId')

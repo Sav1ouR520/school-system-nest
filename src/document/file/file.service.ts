@@ -33,22 +33,64 @@ export class FileService {
     }
   }
 
+  async goBackFileByTaskId(
+    fileId: string,
+    userId: string,
+    status = true,
+  ): Promise<ReturnData> {
+    const file = await this.fileRepository.findOneBy({
+      id: fileId,
+      status,
+    });
+    if (!file) {
+      throw new BadRequestException(`File #${fileId} does not exist`);
+    }
+    const task = await this.taskRepository.findOneBy({
+      id: file.taskId,
+      activeStatus: status,
+    });
+    if (!task) {
+      throw new BadRequestException(`Task #${task.id} does not exist`);
+    }
+    const member = await this.beforeAction(file.taskId, userId);
+    if (member.role === 'admin') {
+      const change_file = await this.fileRepository.preload({
+        id: fileId,
+        status: false,
+        message: file.message + '->文件退回',
+      });
+      await this.fileRepository.save(change_file);
+      return { action: true, message: `File ${fileId} returned successfully` };
+    }
+    throw new BadRequestException(
+      `User #${userId} does not have group permissions`,
+    );
+  }
+
   async findFileBytaskId(
     taskId: string,
     userId: string,
-    status?: true,
+    status = true,
   ): Promise<ReturnData> {
     const member = await this.beforeAction(taskId, userId);
     const { groupId } = await this.taskRepository.findOneBy({ id: taskId });
     if (member.role === 'admin') {
-      const data = await this.memberRepository
+      const member = await this.memberRepository
         .createQueryBuilder('member')
         .leftJoinAndSelect('member.file', 'file', 'file.status = :status', {
           status,
         })
         .where({ groupId })
         .getMany();
-      return { data, action: true, message: 'Request data succeeded' };
+      const task = await this.taskRepository.findOne({
+        where: { id: taskId },
+        relations: ['member'],
+      });
+      return {
+        data: { task, member },
+        action: true,
+        message: 'Request data succeeded',
+      };
     }
     throw new BadRequestException(
       `User #${userId} does not have group permissions`,
@@ -111,14 +153,19 @@ export class FileService {
       });
       this.fileRepository.manager.transaction(
         async (transactionalEntityManager) => {
-          await transactionalEntityManager.save(file);
           const activeFile = await this.fileRepository.find({
             where: { taskId, memberId: member.id, status: true },
           });
           if (activeFile) {
-            activeFile.forEach((file) => (file.status = false));
+            activeFile.forEach(
+              (file) => (
+                (file.status = false),
+                (file.message = file.message + '->文件修改')
+              ),
+            );
             await transactionalEntityManager.save(activeFile);
           }
+          await transactionalEntityManager.save(file);
           return { action: true, message: 'File modified successfully' };
         },
       );
