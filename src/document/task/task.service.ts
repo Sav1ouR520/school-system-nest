@@ -18,7 +18,11 @@ export class TaskService {
   ) {}
 
   async checkMemberExist(groupId: string, userId: string, checkRole = false) {
-    const member = await this.memberRepository.findOneBy({ groupId, userId });
+    const member = await this.memberRepository.findOneBy({
+      groupId,
+      userId,
+      status: true,
+    });
     if (!member) {
       throw new BadRequestException(
         `the user #${userId} does not belong to this group ${groupId}`,
@@ -37,12 +41,11 @@ export class TaskService {
   async beforeActionWithGroupId(
     groupId: string,
     userId: string,
-    activeStatus = true,
     checkRole = false,
   ) {
     const group = await this.groupRepository.findOneBy({
       id: groupId,
-      activeStatus,
+      status: true,
     });
     if (!group) {
       throw new BadRequestException(`The group #${groupId} does not exist `);
@@ -53,12 +56,11 @@ export class TaskService {
   async beforeActionWithTaskId(
     taskId: string,
     userId: string,
-    activeStatus = true,
     checkRole = false,
   ) {
     const task = await this.taskRepository.findOneBy({
       id: taskId,
-      activeStatus,
+      status: true,
     });
     if (!task) {
       throw new BadRequestException(`The task #${taskId} does not exist `);
@@ -69,11 +71,11 @@ export class TaskService {
   async findtaskInfoByTaskId(
     taskId: string,
     userId: string,
-    activeStatus = true,
+    status = true,
   ): Promise<ReturnData> {
     await this.beforeActionWithTaskId(taskId, userId);
     const data = await this.taskRepository.findOne({
-      where: { id: taskId, activeStatus },
+      where: { id: taskId, status },
       relations: ['member'],
     });
     return {
@@ -83,18 +85,10 @@ export class TaskService {
     };
   }
 
-  async findtaskByTaskId(
-    taskId: string,
-    userId: string,
-    activeStatus = true,
-  ): Promise<ReturnData> {
-    const member = await this.beforeActionWithTaskId(
-      taskId,
-      userId,
-      activeStatus,
-    );
+  async findtaskByTaskId(taskId: string, userId: string): Promise<ReturnData> {
+    const member = await this.beforeActionWithTaskId(taskId, userId);
     const task = await this.taskRepository.findOne({
-      where: { id: taskId, activeStatus },
+      where: { id: taskId, status: true },
       relations: ['member'],
     });
     const File = await this.fileRepository.findOne({
@@ -110,17 +104,31 @@ export class TaskService {
   async findtaskByGroupId(
     groupId: string,
     userId: string,
-    activeStatus = true,
   ): Promise<ReturnData> {
-    await this.beforeActionWithGroupId(groupId, userId, activeStatus);
+    await this.beforeActionWithGroupId(groupId, userId);
     const data = await this.taskRepository
       .createQueryBuilder('task')
-      .leftJoinAndSelect('task.file', 'file', 'file.status = :status', {
-        status: true,
+      .leftJoinAndSelect('task.file', 'file', 'file.status = :fileStatus', {
+        fileStatus: true,
       })
-      .where({ groupId, activeStatus })
+      .leftJoinAndSelect('file.member', 'member')
+      .where({ groupId, status: true })
       .getMany();
-    return { data, action: true, message: 'Request data succeeded' };
+    for (const i in data) {
+      for (const j in data[i].file) {
+        const member = data[i].file[j]?.member;
+        if (member && !member.status) {
+          data[i].file = data[i].file.filter(
+            (file) => file.memberId !== member.id,
+          );
+        }
+      }
+    }
+    const task = [];
+    data.forEach((item) => {
+      task.push({ id: item.id, name: item.name, file: item.file.length });
+    });
+    return { data: task, action: true, message: 'Request data succeeded' };
   }
 
   async addTask(userId: string, taskDto: CreateTaskDto, dataPath?: string) {
@@ -134,16 +142,11 @@ export class TaskService {
     return { message: 'Task created successfully' };
   }
 
-  async deleteTask(
-    taskIds: string[],
-    userId: string,
-    activeStatus = true,
-    checkRole = true,
-  ) {
+  async deleteTask(taskIds: string[], userId: string, checkRole = true) {
     const all_before_action_promise: Promise<Member>[] = [];
     taskIds.forEach((taskId) =>
       all_before_action_promise.push(
-        this.beforeActionWithTaskId(taskId, userId, activeStatus, checkRole),
+        this.beforeActionWithTaskId(taskId, userId, checkRole),
       ),
     );
     await Promise.all(all_before_action_promise);
@@ -152,7 +155,7 @@ export class TaskService {
       all_preload_promise.push(
         this.taskRepository.preload({
           id: taskId,
-          activeStatus: false,
+          status: false,
         }),
       ),
     );
@@ -169,22 +172,16 @@ export class TaskService {
     userId: string,
     taskDto: ModifyTaskDto,
     dataPath?: string,
-    activeStatue = true,
     checkRole = true,
   ) {
-    await this.beforeActionWithTaskId(
-      taskDto.id,
-      userId,
-      activeStatue,
-      checkRole,
-    );
+    await this.beforeActionWithTaskId(taskDto.id, userId, checkRole);
     const result = await this.taskRepository.preload({ ...taskDto, dataPath });
     await this.taskRepository.save(result);
     return { message: `Successfully updated task #${taskDto.id} information` };
   }
 
-  async clearFilePath(taskId: string, userId: string, activeStatue = true) {
-    await this.beforeActionWithTaskId(taskId, userId, activeStatue);
+  async clearFilePath(taskId: string, userId: string) {
+    await this.beforeActionWithTaskId(taskId, userId);
     const result = await this.taskRepository.preload({
       id: taskId,
       dataPath: null,

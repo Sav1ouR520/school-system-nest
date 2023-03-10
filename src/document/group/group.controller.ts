@@ -32,6 +32,14 @@ import { FileInterceptor } from '@nestjs/platform-express';
 export class GroupController {
   constructor(private readonly groupService: GroupService) {}
 
+  @Post('join/:inviteCode')
+  joinGroupByInviteCode(
+    @Param('inviteCode') inviteCode: string,
+    @GetUser('id') userId: string,
+  ) {
+    return this.groupService.joinGroupByInviteCode(inviteCode, userId);
+  }
+
   @Get('owner')
   @ApiOperation({ summary: '查找组', description: '查找自己管理的组' })
   findGroupByOwner(@GetUser('id') owner: string) {

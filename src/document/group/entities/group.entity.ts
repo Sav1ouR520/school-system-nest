@@ -32,7 +32,7 @@ export class Group {
   createTime: Date;
 
   @Column({ type: 'boolean', default: true, comment: '激活状态' })
-  activeStatus: boolean;
+  status: boolean;
 
   @Column({ type: 'varchar', comment: '邀请码' })
   inviteCode: string;

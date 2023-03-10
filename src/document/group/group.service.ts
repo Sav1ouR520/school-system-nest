@@ -36,17 +36,17 @@ export class GroupService {
     return group;
   }
 
-  async updateInviteCode(
-    groupId: string,
-    userId: string,
-    activeStatus = true,
-  ): Promise<ReturnData> {
+  async updateInviteCode(groupId: string, userId: string): Promise<ReturnData> {
     const group = await this.groupRepository.findOneBy({
       id: groupId,
-      activeStatus,
+      status: true,
     });
     if (group) {
-      const member = await this.memberRepository.findOneBy({ groupId, userId });
+      const member = await this.memberRepository.findOneBy({
+        groupId,
+        userId,
+        status: true,
+      });
       if (!member || member.role !== 'admin') {
         throw new BadRequestException(
           `User #${userId} does not have permission`,
@@ -68,11 +68,10 @@ export class GroupService {
   async joinGroupByInviteCode(
     inviteCode: string,
     userId: string,
-    activeStatus = true,
   ): Promise<ReturnData> {
     const group = await this.groupRepository.findOneBy({
       inviteCode,
-      activeStatus,
+      status: true,
     });
     if (group) {
       const group2 = await this.checkInviteCodeTime(group);
@@ -81,10 +80,17 @@ export class GroupService {
           userId,
           groupId: group.id,
         });
-        if (existMember) {
+        if (existMember && existMember.status !== false) {
           return {
             action: false,
             message: `The user #${userId} is already in this group`,
+          };
+        } else if (existMember.status === false) {
+          existMember.status = true;
+          await this.memberRepository.save(existMember);
+          return {
+            action: true,
+            message: `User #${userId} successfully joined the group${group.id}`,
           };
         }
         const user = await this.userRepository.findOneBy({ id: userId });
@@ -107,13 +113,16 @@ export class GroupService {
   async getGroupInviteCode(
     groupId: string,
     userId: string,
-    activeStatus = true,
   ): Promise<ReturnData> {
-    const member = await this.memberRepository.findOneBy({ groupId, userId });
+    const member = await this.memberRepository.findOneBy({
+      groupId,
+      userId,
+      status: true,
+    });
     if (member) {
       const group = await this.groupRepository.findOneBy({
         id: groupId,
-        activeStatus,
+        status: true,
       });
       if (group) {
         const inviteCode = (await this.checkInviteCodeTime(group)).inviteCode;
@@ -130,13 +139,10 @@ export class GroupService {
     );
   }
 
-  async findGroupByOwner(
-    owner: string,
-    activeStatus = true,
-  ): Promise<ReturnData> {
+  async findGroupByOwner(owner: string): Promise<ReturnData> {
     const groups = await this.groupRepository.find({
-      select: ['id', 'icon', 'name', 'owner', 'createTime', 'activeStatus'],
-      where: { owner, activeStatus },
+      select: ['id', 'icon', 'name', 'owner', 'createTime', 'status'],
+      where: { owner, status: true },
       relations: ['member'],
     });
     const data = groups ? groups : [];
@@ -146,15 +152,10 @@ export class GroupService {
   async findGroupByUserId(userId: string): Promise<ReturnData> {
     const data = await this.memberRepository
       .createQueryBuilder('member')
-      .innerJoinAndSelect(
-        'member.group',
-        'group',
-        'group.activeStatus = :activeStatus',
-        {
-          activeStatus: true,
-        },
-      )
-      .where({ userId })
+      .innerJoinAndSelect('member.group', 'group', 'group.status = :status', {
+        status: true,
+      })
+      .where({ userId, status: true })
       .getMany();
     return { data, action: true, message: 'Request data succeeded' };
   }
@@ -162,17 +163,20 @@ export class GroupService {
   async findGroupByGroupId(
     groupId: string,
     userId: string,
-    activeStatus = true,
   ): Promise<ReturnData> {
-    const member = await this.memberRepository.findOneBy({ userId, groupId });
+    const member = await this.memberRepository.findOneBy({
+      userId,
+      groupId,
+      status: true,
+    });
     if (!member) {
       throw new BadRequestException(
         `User #${userId} does not belong to this group`,
       );
     }
     const data = await this.groupRepository.findOne({
-      select: ['id', 'icon', 'name', 'owner', 'createTime', 'activeStatus'],
-      where: { id: groupId, activeStatus },
+      select: ['id', 'icon', 'name', 'owner', 'createTime', 'status'],
+      where: { id: groupId, status: true },
     });
     if (!data) {
       throw new BadRequestException(`The Group #${groupId} does not exist`);
@@ -211,7 +215,7 @@ export class GroupService {
     await this.beforeAction(id, owner);
     const result = await this.groupRepository.preload({
       id,
-      activeStatus: false,
+      status: false,
     });
     const { name } = await this.groupRepository.save(result);
     return {
@@ -231,6 +235,15 @@ export class GroupService {
       throw new BadRequestException(`User #${groupDto.owner} does not exist`);
     }
     const result = await this.groupRepository.preload({ ...groupDto, icon });
+    if (groupDto.owner) {
+      const member = await this.memberRepository.findOneBy({
+        userId: groupDto.owner,
+        groupId: groupDto.id,
+        status: true,
+      });
+      member.role = MemberRole.ADMIN;
+      await this.memberRepository.save(member);
+    }
     await this.groupRepository.save(result);
     return {
       action: true,

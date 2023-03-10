@@ -1,8 +1,9 @@
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { Repository } from 'typeorm';
-import { Group, ReturnData, User } from 'src/common';
-import { CreateMemberDto, UploadMemberDto, deleteMemberDto } from './dto';
+import { Group, ReturnData } from 'src/common';
+import { UploadMemberDto } from './dto';
 import { Member } from './entities';
+import { MemberRole } from './enum';
 
 @Injectable()
 export class MemberService {
@@ -11,36 +12,73 @@ export class MemberService {
     private readonly memberRepository: Repository<Member>,
     @Inject('GroupRepository')
     private readonly groupRepository: Repository<Group>,
-    @Inject('UserRepository')
-    private readonly userRepository: Repository<User>,
   ) {}
 
-  async beforeAction(
-    id: string,
-    owner?: string,
-    activeStatus = true,
-    checkOwner = false,
-  ) {
+  async beforeAction(groupId: string, userId: string, permission: boolean) {
     const group = await this.groupRepository.findOneBy({
-      id,
-      owner,
-      activeStatus,
+      id: groupId,
+      status: true,
     });
     if (!group) {
-      if (checkOwner) {
-        throw new BadRequestException(
-          `The group #${id} does not belong to this user #${owner}`,
-        );
-      } else {
-        throw new BadRequestException(`The group #${id} does not exist`);
-      }
+      throw new BadRequestException(`The group #${groupId} does not exist`);
     }
+    const member = await this.memberRepository.findOneBy({
+      groupId,
+      userId,
+      status: true,
+    });
+    if (!member) {
+      throw new BadRequestException(`The user #${userId} is not in the group`);
+    }
+    if (permission && member.role !== 'admin') {
+      throw new BadRequestException(
+        `The user #${userId} does not have permission`,
+      );
+    }
+    return member;
   }
 
-  async findMember(groupId: string): Promise<ReturnData> {
-    await this.beforeAction(groupId);
+  async findMemberByUserId(groupId: string, userId: string) {
+    const member = await this.beforeAction(groupId, userId, false);
+    return { action: true, data: member, message: 'Request data succeeded' };
+  }
+
+  async findMemberByMemberId(
+    groupId: string,
+    userId: string,
+    memberId: string,
+  ): Promise<ReturnData> {
+    await this.beforeAction(groupId, userId, false);
+    const data = await this.memberRepository.findOne({
+      where: {
+        groupId,
+        id: memberId,
+        status: true,
+      },
+      relations: ['user'],
+    });
+    if (!data) {
+      throw new BadRequestException(`The user #${userId} is not in the group`);
+    }
+    const member = {
+      id: data.id,
+      groupId: data.groupId,
+      userId: data.userId,
+      name: data.name,
+      role: data.role,
+      joinTime: data.joinTime,
+      icon: data.user.icon,
+    };
+    return { action: true, data: member, message: 'Request data succeeded' };
+  }
+
+  async findMemberByGroupId(
+    groupId: string,
+    userId: string,
+  ): Promise<ReturnData> {
+    await this.beforeAction(groupId, userId, false);
     const data = await this.memberRepository.find({
-      where: { groupId },
+      where: { groupId, status: true },
       relations: ['user'],
     });
     const members = [];
@@ -62,58 +100,33 @@ export class MemberService {
     };
   }
 
-  async addMember(
-    memberDto: CreateMemberDto,
-    onwer: string,
-  ): Promise<ReturnData> {
-    const { groupId } = memberDto;
+  async deleteMember(ids: string[], userId: string): Promise<ReturnData> {
+    const all_before_action_promise: Promise<Member>[] = [];
     const members: Member[] = [];
-    await this.beforeAction(groupId, onwer);
-    for (const member of memberDto.members) {
-      const user = await this.userRepository.findOneBy({ id: member.userId });
-      const entity = this.memberRepository.create({
-        groupId,
-        ...member,
-        name: user.username,
+    for (const i in ids) {
+      const member = await this.memberRepository.findOneBy({
+        id: ids[i],
+        status: true,
       });
-      members.push(entity);
+      if (!member) {
+        throw new BadRequestException(`member #${ids[i]} dose not exist`);
+      }
+      if (member.userId === userId) {
+        throw new BadRequestException(`You can't delete yourself`);
+      }
+      if (member.role === MemberRole.ADMIN) {
+        throw new BadRequestException(`You cannot delete administrator user`);
+      }
+      all_before_action_promise.push(
+        this.beforeAction(member.groupId, userId, true),
+      );
+      member.status = false;
+      members.push(member);
     }
+    await Promise.all(all_before_action_promise);
     await this.memberRepository.manager.transaction(
       async (transactionalEntityManager) => {
         await transactionalEntityManager.save(members);
-      },
-    );
-    return {
-      action: true,
-      message: 'Member added successfully',
-    };
-  }
-
-  async deleteMember(
-    memberDto: deleteMemberDto,
-    onwer: string,
-  ): Promise<ReturnData> {
-    const { groupId } = memberDto;
-    const members: Member[] = [];
-    await this.beforeAction(groupId, onwer);
-    for (const member of memberDto.members) {
-      const { id, userId } = member;
-      const entity = await this.memberRepository.findOneBy({
-        id,
-        groupId,
-        userId,
-      });
-      if (userId === onwer) {
-        throw new BadRequestException(`You can't modify your own permissions`);
-      }
-      if (!entity) {
-        throw new BadRequestException('Entity does not exist');
-      }
-      members.push(entity);
-    }
-    await this.memberRepository.manager.transaction(
-      async (transactionalEntityManager) => {
-        await transactionalEntityManager.delete(Member, members);
       },
     );
     return {
@@ -122,38 +135,28 @@ export class MemberService {
     };
   }
 
-  async modifyMember(
+  async modifyMemberWithAdmin(
     memberDto: UploadMemberDto,
     onwer: string,
   ): Promise<ReturnData> {
-    const { groupId } = memberDto;
-    const members: Member[] = [];
-    await this.beforeAction(groupId, onwer);
-    for (const member of memberDto.members) {
-      const { id, userId, role, name } = member;
-      const entity = await this.memberRepository.findOneBy({
-        id,
-        groupId,
-        userId,
-      });
-      if (userId === onwer) {
-        throw new BadRequestException(`You can't modify your own permissions`);
-      }
-      if (!entity) {
-        throw new BadRequestException('Entity does not exist');
-      }
-      role ? (entity.role = role) : undefined;
-      name ? (entity.name = name) : undefined;
-      members.push(entity);
+    const { id, name, role, groupId } = memberDto;
+    const m = await this.beforeAction(groupId, onwer, true);
+    if (role && id === m.id) {
+      throw new BadRequestException(`You can't modify your own permissions`);
     }
-    await this.memberRepository.manager.transaction(
-      async (transactionalEntityManager) => {
-        await transactionalEntityManager.save(members);
-      },
-    );
+    const member = await this.memberRepository.preload({
+      id,
+      name,
+      role,
+      groupId,
+    });
+    if (!member) {
+      throw new BadRequestException('Member does not exist');
+    }
+    await this.memberRepository.save(member);
     return {
       action: true,
-      message: 'Member deleted successfully',
+      message: 'Member modify successfully',
     };
   }
 }

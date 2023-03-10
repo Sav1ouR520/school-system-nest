@@ -27,7 +27,7 @@ export class Task {
   groupId: string;
 
   @Column({ type: 'boolean', default: true, comment: '激活状态' })
-  activeStatus: boolean;
+  status: boolean;
 
   @Column({ type: 'varchar', comment: '前置材料存放路径', nullable: true })
   dataPath: string;

@@ -15,7 +15,7 @@ export class Member {
   @PrimaryGeneratedColumn('uuid', { comment: '唯一标识' })
   id: string;
 
-  @Column({ type: 'varchar', comment: '群名' })
+  @Column({ type: 'varchar', comment: '成员名' })
   name: string;
 
   @Column({ type: 'varchar', comment: '组id' })
@@ -23,6 +23,9 @@ export class Member {
 
   @Column({ type: 'varchar', comment: '用户id' })
   userId: string;
+
+  @Column({ type: 'boolean', comment: '状态', default: true })
+  status: boolean;
 
   @Column({
     type: 'enum',

@@ -23,6 +23,7 @@ export class FileService {
     const member = await this.memberRepository.findOneBy({
       userId,
       groupId: task.groupId,
+      status: true,
     });
     if (!member) {
       throw new BadRequestException(
@@ -36,18 +37,17 @@ export class FileService {
   async goBackFileByTaskId(
     fileId: string,
     userId: string,
-    status = true,
   ): Promise<ReturnData> {
     const file = await this.fileRepository.findOneBy({
       id: fileId,
-      status,
+      status: true,
     });
     if (!file) {
       throw new BadRequestException(`File #${fileId} does not exist`);
     }
     const task = await this.taskRepository.findOneBy({
       id: file.taskId,
-      activeStatus: status,
+      status: true,
     });
     if (!task) {
       throw new BadRequestException(`Task #${task.id} does not exist`);
@@ -67,20 +67,22 @@ export class FileService {
     );
   }
 
-  async findFileBytaskId(
-    taskId: string,
-    userId: string,
-    status = true,
-  ): Promise<ReturnData> {
+  async findFileBytaskId(taskId: string, userId: string): Promise<ReturnData> {
     const member = await this.beforeAction(taskId, userId);
     const { groupId } = await this.taskRepository.findOneBy({ id: taskId });
     if (member.role === 'admin') {
       const member = await this.memberRepository
         .createQueryBuilder('member')
-        .leftJoinAndSelect('member.file', 'file', 'file.status = :status', {
-          status,
-        })
-        .where({ groupId })
+        .leftJoinAndSelect(
+          'member.file',
+          'file',
+          'file.status = :status AND file.taskId = :taskId',
+          {
+            status: true,
+            taskId: taskId,
+          },
+        )
+        .where({ groupId, status: true })
         .getMany();
       const task = await this.taskRepository.findOne({
         where: { id: taskId },
@@ -100,13 +102,12 @@ export class FileService {
   async checkFileByUserId(
     taskId: string,
     userId: string,
-    status?: true,
   ): Promise<ReturnData<File>> {
     const member = await this.beforeAction(taskId, userId);
     const data = await this.fileRepository.findOneBy({
       taskId,
       memberId: member.id,
-      status,
+      status: true,
     });
     return { data, action: true, message: 'Request data succeeded' };
   }
@@ -120,6 +121,7 @@ export class FileService {
     const IsUpload = await this.fileRepository.findOneBy({
       taskId,
       memberId: member.id,
+      status: true,
     });
     if (IsUpload) {
       throw new BadRequestException(`Cannot submit task repeatedly`);
