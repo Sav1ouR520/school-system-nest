@@ -85,12 +85,10 @@ export class MemberService {
     data.map((member) => {
       members.push({
         id: member.id,
-        groupId: member.groupId,
-        userId: member.userId,
         name: member.name,
         role: member.role,
-        joinTime: member.joinTime,
         icon: member.user.icon,
+        userId: member.userId,
       });
     });
     return {

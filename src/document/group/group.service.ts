@@ -85,7 +85,7 @@ export class GroupService {
             action: false,
             message: `The user #${userId} is already in this group`,
           };
-        } else if (existMember.status === false) {
+        } else if (existMember && existMember.status === false) {
           existMember.status = true;
           await this.memberRepository.save(existMember);
           return {
@@ -139,14 +139,24 @@ export class GroupService {
     );
   }
 
-  async findGroupByOwner(owner: string): Promise<ReturnData> {
-    const groups = await this.groupRepository.find({
-      select: ['id', 'icon', 'name', 'owner', 'createTime', 'status'],
-      where: { owner, status: true },
-      relations: ['member'],
+  async findGroupByOwner(userId: string): Promise<ReturnData> {
+    const members = await this.memberRepository.find({
+      where: {
+        userId,
+        status: true,
+        role: MemberRole.ADMIN,
+      },
+      relations: ['group'],
     });
-    const data = groups ? groups : [];
-    return { data, action: true, message: 'Request data succeeded' };
+    const groupIds = [];
+    members.forEach((member) =>
+      groupIds.push({
+        name: member.group.name,
+        icon: member.group.icon,
+        id: member.groupId,
+      }),
+    );
+    return { data: groupIds, action: true, message: 'Request data succeeded' };
   }
 
   async findGroupByUserId(userId: string): Promise<ReturnData> {
@@ -155,9 +165,31 @@ export class GroupService {
       .innerJoinAndSelect('member.group', 'group', 'group.status = :status', {
         status: true,
       })
+      .leftJoinAndSelect(
+        'group.member',
+        'group_member',
+        'group_member.status = :status',
+        {
+          status: true,
+        },
+      )
+      .leftJoinAndSelect('group.task', 'task', 'task.status = :status', {
+        status: true,
+      })
       .where({ userId, status: true })
       .getMany();
-    return { data, action: true, message: 'Request data succeeded' };
+    const groups = [];
+    data.forEach((member) =>
+      groups.push({
+        id: member.group.id,
+        name: member.group.name,
+        icon: member.group.icon,
+        member: member.group.member.length,
+        createTime: member.group.createTime,
+        task: member.group.task.length,
+      }),
+    );
+    return { data: groups, action: true, message: 'Request data succeeded' };
   }
 
   async findGroupByGroupId(

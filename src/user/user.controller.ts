@@ -1,10 +1,4 @@
-import {
-  Controller,
-  Post,
-  Body,
-  Delete,
-  UseInterceptors,
-} from '@nestjs/common';
+import { Controller, Post, Body, UseInterceptors } from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiBody,
@@ -16,36 +10,26 @@ import {
 import { FileInterceptor } from '@nestjs/platform-express';
 import {
   Get,
-  Inject,
   Param,
   Patch,
   Session,
   UploadedFile,
 } from '@nestjs/common/decorators';
-import { ConfigType } from '@nestjs/config';
 import { BadRequestException } from '@nestjs/common/exceptions/bad-request.exception';
 import { UserService } from './user.service';
+import { Decrypt, GetUser, Public, captchaValidate } from 'src/common';
 import {
-  Decrypt,
-  GetUser,
-  PathConfig,
-  Public,
-  captchaValidate,
-} from 'src/common';
-import { CreateUserDto, UpdateUserDto, UpdateUserIconDto } from './dto';
-import { UserConfig } from './config';
+  CreateUserDto,
+  UpdateUserPasswordDto,
+  UpdateUserIconDto,
+  UpdateUserUsernameDto,
+} from './dto';
 
 @Controller('user')
 @ApiTags('UserController')
 @ApiBearerAuth()
 export class UserController {
-  constructor(
-    private readonly userService: UserService,
-    @Inject(UserConfig.KEY)
-    private readonly userConfig: ConfigType<typeof UserConfig>,
-    @Inject(PathConfig.KEY)
-    private readonly pathConfig: ConfigType<typeof PathConfig>,
-  ) {}
+  constructor(private readonly userService: UserService) {}
 
   @Get()
   @ApiOperation({ summary: '获取用户信息', description: '获取用户信息' })
@@ -83,33 +67,53 @@ export class UserController {
   @Patch('icon')
   @UseInterceptors(FileInterceptor('icon'))
   @ApiConsumes('multipart/form-data')
-  @ApiOperation({ summary: '上传用户头像', description: '上传用户头像' })
+  @ApiOperation({
+    summary: '更新用户信息头像',
+    description: '根据id更新用户头像',
+  })
   @ApiBody({ type: UpdateUserIconDto })
-  uploadUserImage(
+  updateUserIcno(
     @UploadedFile() icon: Express.Multer.File,
     @GetUser('id') id: string,
   ) {
     if (icon) {
-      const path =
-        this.pathConfig.rootPath + this.userConfig.userIconPath + icon.filename;
-      return this.userService.updateUserIcon(id, path);
+      return this.userService.updateUserIcon(id, icon.filename);
     }
-    throw new BadRequestException(`This file type is not an image`);
+    throw new BadRequestException(`You don't have upload icon`);
   }
 
-  @Patch()
+  @Patch('username')
   @ApiOperation({
-    summary: '更新用户信息',
-    description: '根据id更新用户信息',
+    summary: '更新用户名称信息',
+    description: '根据id更新用户名称信息',
   })
-  @ApiBody({ type: UpdateUserDto })
-  updateUserInfo(@GetUser('id') id: string, @Body() userDto: UpdateUserDto) {
-    return this.userService.updateUserInfo(id, userDto);
+  @ApiBody({ type: UpdateUserUsernameDto })
+  updateUserUsername(
+    @GetUser('id') id: string,
+    @Body() userDto: UpdateUserUsernameDto,
+  ) {
+    return this.userService.updateUserUsername(id, userDto);
   }
 
-  @Delete()
-  @ApiOperation({ summary: '修改用户状态', description: '修改用户状态为false' })
-  disableUserActiveStatus(@GetUser('id') id: string) {
-    return this.userService.disableUserActiveStatus(id);
+  @Patch('password')
+  @ApiOperation({
+    summary: '更新用户密码信息',
+    description: '根据id更新用户密码信息',
+  })
+  @ApiBody({ type: UpdateUserPasswordDto })
+  updateUserPassword(
+    @Session() session,
+    @GetUser('id') id: string,
+    @Body() userDto: UpdateUserPasswordDto,
+  ) {
+    if (session.code) {
+      const result = captchaValidate(session.code, userDto.captcha);
+      if (!result.data.validation) {
+        return result;
+      }
+      const oldPassword = Decrypt(userDto.oldPassword, session.key, session.iv);
+      const newPassword = Decrypt(userDto.newPassword, session.key, session.iv);
+      return this.userService.updateUserPassword(id, oldPassword, newPassword);
+    }
   }
 }

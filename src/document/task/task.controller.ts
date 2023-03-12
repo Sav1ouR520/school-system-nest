@@ -32,7 +32,25 @@ import {
 export class TaskController {
   constructor(private readonly taskService: TaskService) {}
 
-  @Get(':taskId')
+  @Get('owner')
+  @ApiOperation({
+    summary: '查找创建的任务',
+    description: '查创建的任务',
+  })
+  findTaskByCreater(@GetUser('id') userId: string) {
+    return this.taskService.findTaskByCreater(userId);
+  }
+
+  @Get('userId')
+  @ApiOperation({
+    summary: '查找完成和未完成任务',
+    description: '查完成和未完成任务',
+  })
+  findTasksByUserId(@GetUser('id') userId: string) {
+    return this.taskService.findTasksByUserId(userId);
+  }
+
+  @Get('Info/:taskId')
   @ApiOperation({ summary: '查找任务', description: '查找任务' })
   findtaskInfoByTaskId(
     @Param('taskId', UUIDvalidatePipe) taskId: string,
@@ -43,11 +61,11 @@ export class TaskController {
 
   @Get('taskId/:taskId')
   @ApiOperation({ summary: '查找任务', description: '查找任务' })
-  findTaskByTaskId(
+  findtaskWithFileByTaskId(
     @Param('taskId', UUIDvalidatePipe) taskId: string,
     @GetUser('id') userId: string,
   ) {
-    return this.taskService.findtaskByTaskId(taskId, userId);
+    return this.taskService.findtaskWithFileByTaskId(taskId, userId);
   }
 
   @Get('groupId/:groupId')

@@ -1,5 +1,4 @@
 import {
-  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -8,27 +7,23 @@ import {
   Param,
   Patch,
   Query,
-  UploadedFile,
   UseGuards,
-  UseInterceptors,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiBody,
-  ApiConsumes,
   ApiOperation,
   ApiParam,
   ApiTags,
 } from '@nestjs/swagger';
 import { ConfigType } from '@nestjs/config';
-import { FileInterceptor } from '@nestjs/platform-express';
 import { UserService } from './user.service';
 import { PaginationDto, UUIDvalidatePipe } from 'src/common';
 import { UserRole } from './enum';
 import { RoleGuard } from './guards';
 import { Roles } from './roles';
 import { UserConfig } from './config';
-import { SelectUserDto, UpdateUserDto, UpdateUserIconDto } from './dto';
+import { SelectUserDto, UpdateUserDto } from './dto';
 
 @Controller('user')
 @Roles(UserRole.ADMIN)
@@ -57,28 +52,12 @@ export class AdminController {
     description: '根据id更新用户信息',
   })
   @ApiParam({ name: 'id', description: 'id', required: true })
+  @ApiBody({ type: UpdateUserDto })
   updateUserInfo(
     @Param('id', UUIDvalidatePipe) id: string,
     @Body() userDto: UpdateUserDto,
   ) {
     return this.userService.updateUserInfo(id, userDto);
-  }
-
-  @Patch('icon/:id')
-  @UseInterceptors(FileInterceptor('icon'))
-  @ApiConsumes('multipart/form-data')
-  @ApiOperation({ summary: '上传用户头像', description: '上传用户头像' })
-  @ApiParam({ name: 'id', description: 'id', required: true })
-  @ApiBody({ type: UpdateUserIconDto })
-  uploadUserImage(
-    @UploadedFile() icon: Express.Multer.File,
-    @Param('id', UUIDvalidatePipe) id: string,
-  ) {
-    if (icon) {
-      const path = this.userConfig.userIconPath + icon.filename;
-      return this.userService.updateUserIcon(id, path);
-    }
-    throw new BadRequestException(`This file type is not an image`);
   }
 
   @Delete(':id')

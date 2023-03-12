@@ -1,10 +1,7 @@
-import { ApiProperty, OmitType, PartialType } from '@nestjs/swagger';
+import { ApiProperty, PartialType } from '@nestjs/swagger';
 import { UserRole } from '../enum/userRole';
-import { UploadUserOtherInfoDto } from './update-user.dto';
 import { IsEnum } from 'class-validator';
-export class SelectUserOtherInfoDto extends OmitType(UploadUserOtherInfoDto, [
-  'username',
-]) {
+export class SelectUserOtherInfoDto {
   @ApiProperty({ description: '账号' })
   readonly account: string;
 

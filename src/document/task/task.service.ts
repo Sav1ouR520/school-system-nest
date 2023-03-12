@@ -68,14 +68,103 @@ export class TaskService {
     return await this.checkMemberExist(task.groupId, userId, checkRole);
   }
 
+  async findTaskByCreater(userId: string): Promise<ReturnData> {
+    const data = await this.memberRepository
+      .createQueryBuilder('member')
+      .leftJoinAndSelect(
+        'member.group',
+        'group',
+        'group.status = :status and group.owner = owner',
+        {
+          status: true,
+          owner: userId,
+        },
+      )
+      .leftJoinAndSelect('group.task', 'task', 'task.status = :status', {
+        status: true,
+      })
+      .leftJoinAndSelect(
+        'group.member',
+        'group_member',
+        'group_member.status = :status',
+        {
+          status: true,
+        },
+      )
+      .leftJoinAndSelect('task.file', 'file', 'file.status = :status', {
+        status: true,
+      })
+      .where({ userId, status: true })
+      .getMany();
+    const tasks = [];
+    data.forEach((member) => {
+      member.group.task.forEach((task) => {
+        tasks.push({
+          task: {
+            id: task.id,
+            name: task.name,
+            createTime: task.createTime,
+            file: task.file.length,
+          },
+          group: {
+            id: member.group.id,
+            icon: member.group.icon,
+            name: member.group.name,
+            member: member.group.member.length,
+          },
+        });
+      });
+    });
+    return { data: tasks, action: true, message: 'Request data succeeded' };
+  }
+
+  async findTasksByUserId(userId: string): Promise<ReturnData> {
+    const data = await this.memberRepository
+      .createQueryBuilder('member')
+      .leftJoinAndSelect('member.group', 'group', 'group.status = :status', {
+        status: true,
+      })
+      .leftJoinAndSelect('group.task', 'task', 'task.status = :status', {
+        status: true,
+      })
+      .leftJoinAndSelect(
+        'task.file',
+        'file',
+        'file.status = :status and member.id = file.memberId',
+        {
+          status: true,
+        },
+      )
+      .where({ userId, status: true })
+      .getMany();
+    const tasks = [];
+    data.forEach((member) => {
+      member.group.task.forEach((task) => {
+        tasks.push({
+          task: {
+            id: task.id,
+            name: task.name,
+            file: task.file.length !== 0,
+            createTime: task.createTime,
+          },
+          group: {
+            id: member.group.id,
+            icon: member.group.icon,
+            name: member.group.name,
+          },
+        });
+      });
+    });
+    return { data: tasks, action: true, message: 'Request data succeeded' };
+  }
+
   async findtaskInfoByTaskId(
     taskId: string,
     userId: string,
-    status = true,
   ): Promise<ReturnData> {
     await this.beforeActionWithTaskId(taskId, userId);
     const data = await this.taskRepository.findOne({
-      where: { id: taskId, status },
+      where: { id: taskId, status: true },
       relations: ['member'],
     });
     return {
@@ -85,7 +174,10 @@ export class TaskService {
     };
   }
 
-  async findtaskByTaskId(taskId: string, userId: string): Promise<ReturnData> {
+  async findtaskWithFileByTaskId(
+    taskId: string,
+    userId: string,
+  ): Promise<ReturnData> {
     const member = await this.beforeActionWithTaskId(taskId, userId);
     const task = await this.taskRepository.findOne({
       where: { id: taskId, status: true },
@@ -108,8 +200,8 @@ export class TaskService {
     await this.beforeActionWithGroupId(groupId, userId);
     const data = await this.taskRepository
       .createQueryBuilder('task')
-      .leftJoinAndSelect('task.file', 'file', 'file.status = :fileStatus', {
-        fileStatus: true,
+      .leftJoinAndSelect('task.file', 'file', 'file.status = :status', {
+        status: true,
       })
       .leftJoinAndSelect('file.member', 'member')
       .where({ groupId, status: true })
