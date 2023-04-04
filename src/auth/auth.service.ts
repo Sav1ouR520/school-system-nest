@@ -20,7 +20,7 @@ export class AuthService {
   async login(userDto: LoginUserDto): Promise<ReturnData> {
     const { account, password } = userDto;
     const user = await this.userRepository.findOneBy({ account });
-    if (user && user.activeStatue && compareSync(password, user.password)) {
+    if (user && user.status && compareSync(password, user.password)) {
       const tokens = await this.getTokens(user.id);
       this.updateRefreshToken(user.id, tokens.refreshToken);
       return {

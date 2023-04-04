@@ -25,7 +25,7 @@ export class User {
   password: string;
 
   @Column({ type: 'boolean', default: true, comment: '激活状态' })
-  activeStatue: boolean;
+  status: boolean;
 
   @CreateDateColumn({
     type: 'timestamp',

@@ -1,5 +1,5 @@
 import { ApiProperty, PartialType } from '@nestjs/swagger';
-import { IsNotEmpty, IsString, IsUUID } from 'class-validator';
+import { IsString, IsUUID } from 'class-validator';
 
 class UpdateGroupInfo {
   @ApiProperty({ description: '组名' })
@@ -13,7 +13,7 @@ class UpdateGroupInfo {
 
 export class UpdateGroupDto extends PartialType(UpdateGroupInfo) {
   @ApiProperty({ description: '组的id' })
-  @IsNotEmpty()
+  @IsUUID()
   readonly id: string;
 }
 

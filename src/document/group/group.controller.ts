@@ -56,7 +56,7 @@ export class GroupController {
   }
 
   @Get('refreshCode/:groupId')
-  @ApiOperation({ summary: '获取组邀请码', description: '获取组邀请码' })
+  @ApiOperation({ summary: '刷新组邀请码', description: '刷新组邀请码' })
   updateInviteCode(
     @Param('groupId', UUIDvalidatePipe) groupId: string,
     @GetUser('id') userId: string,

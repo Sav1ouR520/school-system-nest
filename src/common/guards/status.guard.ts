@@ -21,7 +21,7 @@ export class StatusGuard implements CanActivate {
       const result = this.userService.findUserById(user.id) as Promise<
         ReturnData<User>
       >;
-      return (await result).data.activeStatue;
+      return (await result).data.status;
     }
     return false;
   }

@@ -5,7 +5,12 @@ import { DatabaseProvider } from './providers';
 
 @Global()
 @Module({
-  imports: [ConfigModule.forRoot({ isGlobal: true, load: [dbConfig] })],
+  imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+      load: [dbConfig],
+    }),
+  ],
   providers: [DatabaseProvider],
   exports: [DatabaseProvider],
 })

@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsOptional, Length } from 'class-validator';
+import { IsEnum, IsNotEmpty, IsOptional, Length } from 'class-validator';
+import { UserRole, UserStatus } from '../enum';
 
 export class UpdateUserDto {
   @ApiProperty({ description: '用户名' })
@@ -7,9 +8,10 @@ export class UpdateUserDto {
   @IsOptional()
   readonly username: string;
 
-  @ApiProperty({ description: '激活状态' })
+  @ApiProperty({ description: '用户权限', enum: UserRole })
   @IsOptional()
-  readonly status: boolean;
+  @IsEnum(UserRole)
+  readonly role: UserRole;
 }
 
 export class UpdateUserUsernameDto {
@@ -33,6 +35,18 @@ export class UpdateUserPasswordDto {
 }
 
 export class UpdateUserIconDto {
+  @ApiProperty({ description: '用户头像', format: 'binary' })
+  readonly icon?: string;
+}
+
+export class AdminUpdateUserDto extends UpdateUserDto {
+  @ApiProperty({ description: '激活状态', enum: UserStatus })
+  @IsOptional()
+  @IsEnum(UserStatus)
+  readonly status: string;
+}
+
+export class UpdateUserWithIconDto extends AdminUpdateUserDto {
   @ApiProperty({ description: '用户头像', format: 'binary' })
   readonly icon?: string;
 }

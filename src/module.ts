@@ -9,7 +9,6 @@ import { PostgresModule } from './database/postgres.module';
 import { APP_GUARD } from '@nestjs/core';
 import { AtGuard } from './auth/guards';
 import { EmailModule } from './email/email.module';
-
 @Module({
   imports: [
     PostgresModule,
@@ -17,7 +16,10 @@ import { EmailModule } from './email/email.module';
     AuthModule,
     DocumentModule,
     EmailModule,
-    ConfigModule.forRoot({ isGlobal: true, load: [AppEnvConfig, PathConfig] }),
+    ConfigModule.forRoot({
+      isGlobal: true,
+      load: [AppEnvConfig, PathConfig],
+    }),
   ],
   providers: [
     { provide: APP_GUARD, useClass: AtGuard },

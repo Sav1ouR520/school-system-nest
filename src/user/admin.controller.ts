@@ -3,27 +3,32 @@ import {
   Controller,
   Delete,
   Get,
-  Inject,
   Param,
   Patch,
   Query,
+  UploadedFile,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiBody,
+  ApiConsumes,
   ApiOperation,
   ApiParam,
   ApiTags,
 } from '@nestjs/swagger';
-import { ConfigType } from '@nestjs/config';
 import { UserService } from './user.service';
-import { PaginationDto, UUIDvalidatePipe } from 'src/common';
+import { GetUser, PaginationDto, UUIDvalidatePipe } from 'src/common';
 import { UserRole } from './enum';
 import { RoleGuard } from './guards';
 import { Roles } from './roles';
-import { UserConfig } from './config';
-import { SelectUserDto, UpdateUserDto } from './dto';
+import {
+  SelectUserDto,
+  AdminUpdateUserDto,
+  UpdateUserWithIconDto,
+} from './dto';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 @Controller('user')
 @Roles(UserRole.ADMIN)
@@ -31,11 +36,7 @@ import { SelectUserDto, UpdateUserDto } from './dto';
 @ApiTags('AdminUserController')
 @ApiBearerAuth()
 export class AdminController {
-  constructor(
-    private readonly userService: UserService,
-    @Inject(UserConfig.KEY)
-    private readonly userConfig: ConfigType<typeof UserConfig>,
-  ) {}
+  constructor(private readonly userService: UserService) {}
 
   @Get('all')
   @ApiOperation({ summary: '查询所有用户', description: '查询所有用户' })
@@ -46,18 +47,35 @@ export class AdminController {
     return this.userService.findAll(paginationQuery, userDto);
   }
 
-  @Patch(':id')
+  @Get('userId/:id')
+  @ApiOperation({ summary: '获取用户信息', description: '获取用户信息' })
+  getUserInfo(@Param('id', UUIDvalidatePipe) id: string) {
+    return this.userService.findUserById(id);
+  }
+
+  @Patch(':userId')
   @ApiOperation({
     summary: '更新用户信息',
     description: '根据id更新用户信息',
   })
-  @ApiParam({ name: 'id', description: 'id', required: true })
-  @ApiBody({ type: UpdateUserDto })
+  @UseInterceptors(FileInterceptor('icon'))
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({ type: UpdateUserWithIconDto })
   updateUserInfo(
-    @Param('id', UUIDvalidatePipe) id: string,
-    @Body() userDto: UpdateUserDto,
+    @Param('userId', UUIDvalidatePipe) userId: string,
+    @Body() userDto: AdminUpdateUserDto,
+    @UploadedFile() icon: Express.Multer.File,
+    @GetUser('id') adminId: string,
   ) {
-    return this.userService.updateUserInfo(id, userDto);
+    if (icon) {
+      return this.userService.adminUpdateUserInfo(
+        adminId,
+        userId,
+        userDto,
+        icon.filename,
+      );
+    }
+    return this.userService.adminUpdateUserInfo(adminId, userId, userDto);
   }
 
   @Delete(':id')

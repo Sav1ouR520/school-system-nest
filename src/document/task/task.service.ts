@@ -71,18 +71,15 @@ export class TaskService {
   async findTaskByCreater(userId: string): Promise<ReturnData> {
     const data = await this.memberRepository
       .createQueryBuilder('member')
-      .leftJoinAndSelect(
-        'member.group',
-        'group',
-        'group.status = :status and group.owner = owner',
-        {
-          status: true,
-          owner: userId,
-        },
-      )
-      .leftJoinAndSelect('group.task', 'task', 'task.status = :status', {
+      .leftJoinAndSelect('member.group', 'group', 'group.status = :status', {
         status: true,
       })
+      .leftJoinAndSelect(
+        'group.task',
+        'task',
+        'task.status = :status and task.memberId = member.id',
+        { status: true },
+      )
       .leftJoinAndSelect(
         'group.member',
         'group_member',
@@ -91,29 +88,31 @@ export class TaskService {
           status: true,
         },
       )
-      .leftJoinAndSelect('task.file', 'file', 'file.status = :status', {
+      .leftJoinAndSelect('task.file', 'file', 'file.status = :status ', {
         status: true,
       })
       .where({ userId, status: true })
       .getMany();
     const tasks = [];
     data.forEach((member) => {
-      member.group.task.forEach((task) => {
-        tasks.push({
-          task: {
-            id: task.id,
-            name: task.name,
-            createTime: task.createTime,
-            file: task.file.length,
-          },
-          group: {
-            id: member.group.id,
-            icon: member.group.icon,
-            name: member.group.name,
-            member: member.group.member.length,
-          },
+      if (member.group.task) {
+        member.group.task.forEach((task) => {
+          tasks.push({
+            task: {
+              id: task.id,
+              name: task.name,
+              createTime: task.createTime,
+              file: task.file.length,
+            },
+            group: {
+              id: member.group.id,
+              icon: member.group.icon,
+              name: member.group.name,
+              member: member.group.member.length,
+            },
+          });
         });
-      });
+      }
     });
     return { data: tasks, action: true, message: 'Request data succeeded' };
   }
@@ -139,21 +138,23 @@ export class TaskService {
       .getMany();
     const tasks = [];
     data.forEach((member) => {
-      member.group.task.forEach((task) => {
-        tasks.push({
-          task: {
-            id: task.id,
-            name: task.name,
-            file: task.file.length !== 0,
-            createTime: task.createTime,
-          },
-          group: {
-            id: member.group.id,
-            icon: member.group.icon,
-            name: member.group.name,
-          },
+      if (member.group.task) {
+        member.group.task.forEach((task) => {
+          tasks.push({
+            task: {
+              id: task.id,
+              name: task.name,
+              file: task.file.length !== 0,
+              createTime: task.createTime,
+            },
+            group: {
+              id: member.group.id,
+              icon: member.group.icon,
+              name: member.group.name,
+            },
+          });
         });
-      });
+      }
     });
     return { data: tasks, action: true, message: 'Request data succeeded' };
   }
@@ -162,7 +163,7 @@ export class TaskService {
     taskId: string,
     userId: string,
   ): Promise<ReturnData> {
-    await this.beforeActionWithTaskId(taskId, userId);
+    await this.beforeActionWithTaskId(taskId, userId, true);
     const data = await this.taskRepository.findOne({
       where: { id: taskId, status: true },
       relations: ['member'],
@@ -224,7 +225,11 @@ export class TaskService {
   }
 
   async addTask(userId: string, taskDto: CreateTaskDto, dataPath?: string) {
-    const member = await this.beforeActionWithGroupId(taskDto.groupId, userId);
+    const member = await this.beforeActionWithGroupId(
+      taskDto.groupId,
+      userId,
+      true,
+    );
     const task = this.taskRepository.create({
       memberId: member.id,
       ...taskDto,

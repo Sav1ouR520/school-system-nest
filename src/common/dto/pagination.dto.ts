@@ -4,7 +4,12 @@ import { IsOptional, IsPositive } from 'class-validator';
 export class PaginationDto {
   @IsOptional()
   @IsPositive()
-  @ApiProperty({ description: '数量', required: false, minimum: 1 })
+  @ApiProperty({
+    description: '数量',
+    required: false,
+    minimum: 1,
+    maximum: 10,
+  })
   limit?: number;
 
   @IsOptional()

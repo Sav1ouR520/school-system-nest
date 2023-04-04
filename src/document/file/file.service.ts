@@ -118,6 +118,13 @@ export class FileService {
     filePath: string,
   ): Promise<ReturnData> {
     const member = await this.beforeAction(taskId, userId);
+    const task = await this.taskRepository.findOneBy({
+      id: taskId,
+      status: true,
+    });
+    if (!task) {
+      throw new BadRequestException(`The task #${taskId} does not exist`);
+    }
     const IsUpload = await this.fileRepository.findOneBy({
       taskId,
       memberId: member.id,

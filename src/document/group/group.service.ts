@@ -104,10 +104,9 @@ export class GroupService {
         };
       }
     }
-    return {
-      action: false,
-      message: 'The group does not exist or the activation code expires',
-    };
+    throw new BadRequestException(
+      `The group does not exist or the activation code expires`,
+    );
   }
 
   async getGroupInviteCode(

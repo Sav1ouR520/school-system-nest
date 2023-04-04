@@ -1,89 +1,37 @@
 version: '1'
+name: school-system
 
 services:
   Postgres:
     image: postgres:latest
-    restart: always
     container_name: Postgres
     ports:
       - 5432:5432
     environment:
       - POSTGRES_PASSWORD=postgres
     volumes:
-      - postgres-data:/var/lib/postgresql/data
-    extra_hosts:
-      - "nestjs:172.25.0.11"
-      - "postgres:172.25.0.12"
-      - "redis:172.25.0.13"
-      - "ngnix:172.25.0.14"
-    networks:
-      bigdata:
-        ipv4_address: 172.25.0.12
+      - ./postgres-data:/var/lib/postgresql/data
 
-  Redis:
-    image: redis:latest
-    restart: always
-    container_name: Redis
-    ports:
-      - 6379:6379
-    volumes:
-      - redis-data:/data
-    command: ["redis-server","/data/redis.conf"]
-    extra_hosts:
-      - "nestjs:172.25.0.11"
-      - "postgres:172.25.0.12"
-      - "redis:172.25.0.13"
-      - "ngnix:172.25.0.14"
-    networks:
-      bigdata:
-        ipv4_address: 172.25.0.13
-
-  Ngnix:
-    image: nginx:latest
-    restart: always
-    container_name: Nginx
-    ports:
-     - 80:80
-    volumes:
-     - nginx:/etc/nginx/
-    extra_hosts:
-      - "nestjs:172.25.0.11"
-      - "postgres:172.25.0.12"
-      - "redis:172.25.0.13"
-      - "ngnix:172.25.0.14"
-    networks:
-      bigdata:
-        ipv4_address: 172.25.0.14
-
-  nestjs:
-    build:
-      context: ./
-      dockerfile: nestjs.dockerfile
-    restart: always
-    container_name: nestjs
+  Nestjs:
+    image: school-system-nest:latest
+    container_name: Nestjs
+    # build:
+    #   context: ../
+    #   dockerfile: backend.dockerfile
     ports:
       - 3000:3000
-    extra_hosts:
-      - "nestjs:172.25.0.11"
-      - "postgres:172.25.0.12"
-      - "redis:172.25.0.13"
-      - "ngnix:172.25.0.14"
-    networks:
-      bigdata:
-        ipv4_address: 172.25.0.11
-    command: npm run start
+    volumes:
+      - ./nestjs-data:/school-system-nest/data
+    links:
+      - Postgres
 
-volumes:
-  postgres-data:
-  redis-data:
-  nginx:
-  # nginx-html:
-  # nginx-log:
-
-networks:
-  bigdata:
-    driver: bridge
-    ipam:
-      config:
-        - subnet: 172.25.0.0/16
-          gateway: 172.25.0.1
+  Ngnix:
+    image: nginx:alpine
+    container_name: Ngnix
+    ports:
+      - '80:80'
+    volumes:
+      - ./nginx/html:/usr/share/nginx/html
+      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf
+    links:
+      - Nestjs

@@ -1,11 +1,12 @@
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
-import { Like, Repository } from 'typeorm';
+import { Like, MoreThan, Repository } from 'typeorm';
 import { User } from './entities';
 import {
   CreateUserDto,
   UpdateUserDto,
   SelectUserDto,
   UpdateUserUsernameDto,
+  AdminUpdateUserDto,
 } from './dto';
 import { PaginationDto, ReturnData } from 'src/common';
 import { compareSync } from 'bcryptjs';
@@ -53,8 +54,13 @@ export class UserService {
     const condition = {};
     let key: keyof SelectUserDto;
     for (key in userDto) {
-      if ((userDto[key] && key === 'account') || key === 'username') {
-        condition[key] = Like(userDto[key]);
+      if (
+        (userDto[key] && key === 'account') ||
+        (userDto[key] && key === 'username')
+      ) {
+        condition[key] = Like(`%${userDto[key]}%`);
+      } else if (userDto[key] && key === 'registerTime') {
+        condition[key] = MoreThan(userDto[key]);
       } else if (userDto[key]) {
         condition[key] = userDto[key];
       }
@@ -63,7 +69,7 @@ export class UserService {
       select: [
         'id',
         'icon',
-        'activeStatue',
+        'status',
         'username',
         'account',
         'registerTime',
@@ -71,8 +77,8 @@ export class UserService {
       ],
       where: condition,
       order: { registerTime: 'DESC' },
-      skip: offset,
-      take: limit,
+      skip: offset && limit ? (offset - 1) * limit : 0,
+      take: limit <= 10 ? limit : 10,
     });
     const total = await this.userRepository.count({ where: condition });
     return {
@@ -86,7 +92,7 @@ export class UserService {
     const user = await this.userRepository.findOne({
       select: [
         'id',
-        'activeStatue',
+        'status',
         'icon',
         'username',
         'account',
@@ -99,10 +105,35 @@ export class UserService {
       ? { data: user, action: true, message: 'Request data succeeded' }
       : { action: false, message: `User #${id} does not exist` };
   }
-
+  async adminUpdateUserInfo(
+    adminId: string,
+    userId: string,
+    userDto: AdminUpdateUserDto,
+    icon?: string,
+  ) {
+    await this.beforeAction(userId);
+    if (adminId === userId) {
+      throw new BadRequestException(`You Can't modify youself`);
+    }
+    const user = await this.userRepository.preload({
+      id: userId,
+      ...userDto,
+      status: userDto.status === 'false' ? false : true,
+      icon,
+    });
+    await this.userRepository.save(user);
+    return {
+      action: true,
+      message: 'Successfully updated user information',
+    };
+  }
   async updateUserInfo(id: string, userDto: UpdateUserDto, icon?: string) {
     await this.beforeAction(id);
-    const user = await this.userRepository.preload({ id, ...userDto, icon });
+    const user = await this.userRepository.preload({
+      id,
+      ...userDto,
+      icon,
+    });
     await this.userRepository.save(user);
     return {
       action: true,
@@ -175,7 +206,7 @@ export class UserService {
 
   async disableUserActiveStatus(id: string): Promise<ReturnData> {
     await this.beforeAction(id);
-    const user = await this.userRepository.preload({ id, activeStatue: false });
+    const user = await this.userRepository.preload({ id, status: false });
     await this.userRepository.save(user);
     return {
       action: true,
