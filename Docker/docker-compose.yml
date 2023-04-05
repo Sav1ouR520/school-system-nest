@@ -10,7 +10,7 @@ services:
     environment:
       - POSTGRES_PASSWORD=postgres
     volumes:
-      - ./postgres-data:/var/lib/postgresql/data
+      - ../data/postgres-data:/var/lib/postgresql/data
 
   Nestjs:
     image: school-system-nest:latest
@@ -21,7 +21,7 @@ services:
     ports:
       - 3000:3000
     volumes:
-      - ./nestjs-data:/school-system-nest/data
+      - ../data/nestjs-data:/school-system-nest/nestjs-data/data
     links:
       - Postgres
 

@@ -27,8 +27,8 @@ async function bootstrap() {
   app.setGlobalPrefix(config.globalPrefix);
   app.useGlobalFilters(new HttpExceptionFilter());
   app.useGlobalInterceptors(new WarpResponseInterceptor());
-  app.useStaticAssets(join(__dirname, '../' + config.staticPath), {
-    prefix: config.staticPath,
+  app.useStaticAssets(join(__dirname, config.staticPath), {
+    prefix: config.prefix,
   });
   SwaggerInit(app, config);
   await app.listen(config.appListenPort);

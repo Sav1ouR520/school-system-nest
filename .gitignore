@@ -37,5 +37,4 @@ lerna-debug.log*
 
 pnpm-lock.yaml
 .env
-Docker/nestjs-data
-Docker/postgres-data
+data
