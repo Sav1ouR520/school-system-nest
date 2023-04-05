@@ -21,7 +21,7 @@ services:
     ports:
       - 3000:3000
     volumes:
-      - ../data/nestjs-data:/school-system-nest/nestjs-data/data
+      - ../data/nestjs-data:/school-system-nest/data/nestjs-data
     links:
       - Postgres
 
